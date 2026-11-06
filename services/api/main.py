@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from services.api.config import settings
 from services.api.database import init_db, AsyncSessionLocal
 from services.api.routers import (
-    auth, homes, rooms, devices, readings, events, automations, models, websocket
+    auth, homes, rooms, devices, readings, events, automations, models, websocket,
+    gateway, catalog
 )
 from services.integrations.simulation_adapter import simulation_adapter
 from services.api.models import Device, IntegrationType
@@ -93,6 +94,8 @@ app.include_router(readings.router, prefix=v1)
 app.include_router(events.router, prefix=v1)
 app.include_router(automations.router, prefix=v1)
 app.include_router(models.router, prefix=v1)
+app.include_router(gateway.router, prefix=v1)
+app.include_router(catalog.router, prefix=v1)
 app.include_router(websocket.router)
 
 @app.get("/health")

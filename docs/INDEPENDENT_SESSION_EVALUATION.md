@@ -83,3 +83,4 @@ To eliminate intra-session bias in physical hardware testing, follow this protoc
 2. **Thermal Stabilization:** Record 15 minutes of clean air baseline prior to every exposure.
 3. **Session Tagging:** Hardware firmware must transmit a unique `session_uuid` in the MQTT JSON payload (`airguard/telemetry/{device_id}`).
 4. **Holdout Evaluation:** Hold out entire `session_uuid` blocks for test splits.
+

@@ -112,3 +112,4 @@ CMD ["uvicorn", "worker:app", "--host", "0.0.0.0", "--port", "8001"]
 - **OpenPOM Code:** MIT License (Copyright © 2023 Aryan Amit Barsainyan / BioMachineLearning). Permits academic, open-source, and commercial adaptation with attribution.
 - **GoodScents & Leffingwell Sensory Compilations:** Academic research use only. AirGuard AI does not distribute proprietary commercial sensory databases; users train on open curated subsets.
 - **Safety Compliance:** Odor predictions are strictly perceptual descriptors and must **never** be equated with chemical assays or hazardous gas detection.
+

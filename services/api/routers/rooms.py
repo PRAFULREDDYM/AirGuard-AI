@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from typing import List, Dict, Any
 
 from services.api.database import get_db
-from services.api.models import Room, Home, Device, User
+from services.api.models import Room, Home, Device, User, AutomationRule
 from services.api.schemas import RoomCreate, RoomResponse, DeviceResponse
 from services.api.security import get_current_user
 from services.ingestion.service import IngestionService
@@ -85,4 +85,91 @@ async def delete_room(
     await db.delete(room)
     await db.commit()
     return {"message": "Room deleted successfully."}
+
+@router.get("/{room_id}/pairings")
+async def get_room_pairings(
+    room_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Analyzes devices assigned to this room and proposes or reports active
+    sensor-to-purifier pairings.
+    """
+    res = await db.execute(select(Room).where(Room.id == room_id))
+    room = res.scalars().first()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found.")
+
+    dev_res = await db.execute(select(Device).where(Device.room_id == room_id))
+    devices = dev_res.scalars().all()
+
+    # Categorize into measurement sensors vs controllable purifiers
+    sensors = [d for d in devices if not d.is_controllable]
+    purifiers = [d for d in devices if d.is_controllable]
+
+    # Check for active automation rules for this room
+    rules_res = await db.execute(select(AutomationRule).where(AutomationRule.room_id == room_id))
+    rules = rules_res.scalars().all()
+
+    pairings = []
+    has_paired_rule = len(rules) > 0
+
+    if sensors and purifiers:
+        for s in sensors:
+            for p in purifiers:
+                pairings.append({
+                    "room_id": room.id,
+                    "room_name": room.name,
+                    "sensor": DeviceResponse.model_validate(s),
+                    "purifier": DeviceResponse.model_validate(p),
+                    "is_active": any(r.enabled and r.action_config.get("target_device_id") == p.id for r in rules),
+                    "automation_authorized": p.automation_authorized,
+                    "manual_override": p.manual_override,
+                    "proposed_preset": "clean_air_guard"
+                })
+
+    return {
+        "room_id": room.id,
+        "room_name": room.name,
+        "sensors_count": len(sensors),
+        "purifiers_count": len(purifiers),
+        "pairings": pairings,
+        "active_rules_count": len(rules)
+    }
+
+@router.get("/all/pairings-summary")
+async def get_all_pairings_summary(
+    home_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Home-wide summary showing which rooms have paired sensors & purifiers,
+    unmatched sensors, and unmatched purifiers.
+    """
+    rooms_res = await db.execute(select(Room).where(Room.home_id == home_id))
+    rooms = rooms_res.scalars().all()
+
+    summary = []
+    for room in rooms:
+        dev_res = await db.execute(select(Device).where(Device.room_id == room.id))
+        devices = dev_res.scalars().all()
+        sensors = [DeviceResponse.model_validate(d) for d in devices if not d.is_controllable]
+        purifiers = [DeviceResponse.model_validate(d) for d in devices if d.is_controllable]
+
+        rules_res = await db.execute(select(AutomationRule).where(AutomationRule.room_id == room.id))
+        rules = rules_res.scalars().all()
+
+        summary.append({
+            "room_id": room.id,
+            "room_name": room.name,
+            "room_type": room.room_type,
+            "sensors": sensors,
+            "purifiers": purifiers,
+            "is_paired": len(sensors) > 0 and len(purifiers) > 0,
+            "active_automation": any(r.enabled for r in rules),
+            "rules_count": len(rules)
+        })
+    return summary
 

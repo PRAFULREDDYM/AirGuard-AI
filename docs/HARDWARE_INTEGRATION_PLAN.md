@@ -247,3 +247,4 @@ To evaluate the electronic-nose classification system without risking user safet
    - Command dispatch latency is $<1.5\text{ seconds}$.
    - Cooldown timer activates (30 minutes default).
    - If user touches physical purifier button (manual override), AirGuard logs `MANUAL_OVERRIDE_DETECTED` and suspends automation until next cycle.
+

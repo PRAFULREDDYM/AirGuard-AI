@@ -100,3 +100,4 @@ To achieve genuine reliability in real-world deployment, AirGuard AI implements 
    Requiring scheduled fresh-air calibration cycles to re-anchor $R_0$ before executing odor classification.
 3. **Unsupervised Anomaly Coupling:**
    Whenever sensor drift causes classification confidence to fall below threshold ($\tau < 0.60$), AirGuard AI routes the observation to **unsupervised anomaly detection** rather than outputting false class predictions.
+

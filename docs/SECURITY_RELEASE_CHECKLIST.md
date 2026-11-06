@@ -118,3 +118,4 @@ Run through this checklist before promoting any build to a physical environment:
 - [ ] **MQTT Broker TLS:** Port 8883 with certificate verification enabled; anonymous access disabled.
 - [ ] **Frontend Environment:** Ensure `NEXT_PUBLIC_API_URL` uses `https://` protocol.
 - [ ] **Hardware Life-Safety Disclaimer:** User onboarding interface must display mandatory non-medical, non-certified disclaimer before pairing real devices.
+

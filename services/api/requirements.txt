@@ -21,6 +21,7 @@ httpx>=0.27.0
 websockets>=12.0
 paho-mqtt>=2.0.0
 aiofiles>=23.2.1
+zeroconf>=0.150.0
 
 # Environmental ML
 scikit-learn>=1.4.0

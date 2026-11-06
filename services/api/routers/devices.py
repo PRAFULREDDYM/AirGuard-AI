@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Dict, Any
+from datetime import datetime
 
 from services.api.database import get_db
 from services.api.models import (
@@ -114,6 +115,14 @@ async def test_connection(
         await adapter.disconnect()
         return {"success": ok, "message": "MQTT broker connected" if ok else "Could not connect to MQTT broker."}
 
+    elif provider in (IntegrationType.REST, IntegrationType.ESPHOME):
+        host = creds.get("host", "127.0.0.1")
+        port = int(creds.get("port", 80 if provider == IntegrationType.REST else 6053))
+        from services.integrations.direct_device_adapter import DirectDeviceAdapter
+        adapter = DirectDeviceAdapter(host, port, creds.get("token"))
+        ok = await adapter.test_connection()
+        return {"success": ok, "message": f"{provider.value.upper()} device reached at {host}:{port}" if ok else f"Could not connect to device at {host}:{port}"}
+
     return {"success": True, "message": "Connection test completed."}
 
 @router.post("/discover")
@@ -138,6 +147,21 @@ async def discover_devices(
         adapter = AirGradientAdapter(creds.get("host", "192.168.1.100"))
         devs = await adapter.discover()
         return {"devices": [d.model_dump() for d in devs]}
+
+    elif provider in (IntegrationType.REST, IntegrationType.ESPHOME):
+        host = creds.get("host", "192.168.1.182")
+        from services.integrations.base_adapter import DiscoveredDevice
+        dev = DiscoveredDevice(
+            id=f"{provider.value}_{host.replace('.', '_')}",
+            name=creds.get("name", f"Direct Local Device ({host})"),
+            manufacturer=creds.get("manufacturer", "Generic Smart Device"),
+            model=creds.get("model", "Smart Device"),
+            protocol=provider,
+            is_controllable=creds.get("is_controllable", True),
+            supported_measurements=[{"type": "PM25", "unit": "µg/m³"}] if not creds.get("is_controllable") else [],
+            supported_controls=[{"command": "set_speed", "parameters": ["speed"]}, {"command": "turn_on"}, {"command": "turn_off"}] if creds.get("is_controllable", True) else []
+        )
+        return {"devices": [dev.model_dump()]}
 
     return {"devices": []}
 
@@ -194,9 +218,13 @@ async def send_command(
         command=cmd_in.command,
         parameters=cmd_in.parameters
     )
-    if not is_allowed and not dev.manual_override:
-        # Note: if manual override is active, user is directly commanding device!
-        raise HTTPException(status_code=400, detail=reason)
+    if not is_allowed:
+        # If the block is merely automation authorization, direct user commands are permitted and set manual override
+        if "DEVICE BLOCKED" in reason:
+            dev.manual_override = True
+            await db.commit()
+        elif not dev.manual_override:
+            raise HTTPException(status_code=400, detail=reason)
 
     from services.integrations.base_adapter import DeviceCommand
     cmd_obj = DeviceCommand(command=cmd_in.command, parameters=cmd_in.parameters)

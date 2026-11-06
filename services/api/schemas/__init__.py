@@ -61,8 +61,8 @@ class RoomResponse(BaseModel):
 
 # --- Device Schemas ---
 class DeviceCapabilitySchema(BaseModel):
-    measurements: List[Dict[str, Any]] = []
-    controls: List[Dict[str, Any]] = []
+    measurements: List[Any] = []
+    controls: List[Any] = []
     polling_interval_seconds: int = 10
     supports_streaming: bool = False
     calibration_status: CalibrationQuality = CalibrationQuality.CALIBRATED
