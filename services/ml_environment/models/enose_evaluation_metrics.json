@@ -1,0 +1,131 @@
+{
+  "dataset": "Bosch BME688 Electronic-Nose (CoffeePow-4 & Aroma-7)",
+  "dataset_license": "MIT License (Copyright 2025 Marco Rossoni / mrc-rossoni)",
+  "sensor_technology": "Bosch BME688 Metal-Oxide Semiconductor (MOS) Gas Sensor Array",
+  "heating_cycle": "10-Step Temperature Profiles (100\u00b0C to 400\u00b0C)",
+  "session_split": "Session-Grouped Blocks (40 cycles/block) via GroupKFold to eliminate temporal data leakage",
+  "evaluation_date": "2026-11-05T16:42:07.832152",
+  "models_benchmarked": {
+    "RandomForest": {
+      "accuracy": 0.9056,
+      "macro_precision": 0.9129,
+      "macro_recall": 0.8858,
+      "macro_f1": 0.8908
+    },
+    "HistGradientBoosting": {
+      "accuracy": 0.9167,
+      "macro_precision": 0.9178,
+      "macro_recall": 0.903,
+      "macro_f1": 0.9072
+    },
+    "ConvTran_Transformer": {
+      "accuracy": 0.6111,
+      "macro_precision": 0.5803,
+      "macro_recall": 0.5699,
+      "macro_f1": 0.5614,
+      "architecture": "1D Convolution (k=3) + 2-layer Multi-head Self-Attention (4 heads) + Linear Head"
+    }
+  },
+  "confusion_matrix": [
+    [
+      192,
+      0,
+      6,
+      2
+    ],
+    [
+      0,
+      197,
+      3,
+      0
+    ],
+    [
+      4,
+      1,
+      175,
+      4
+    ],
+    [
+      10,
+      0,
+      38,
+      88
+    ]
+  ],
+  "class_labels": [
+    "Ambient Air",
+    "Borbone Coffee",
+    "Lavazza Coffee",
+    "Primia Coffee"
+  ],
+  "per_class_metrics": {
+    "Ambient Air": {
+      "precision": 0.932,
+      "recall": 0.96,
+      "f1_score": 0.9458,
+      "support": 200,
+      "false_positive_rate": 0.0269,
+      "false_positives": 14,
+      "true_negatives": 506
+    },
+    "Borbone Coffee": {
+      "precision": 0.9949,
+      "recall": 0.985,
+      "f1_score": 0.9899,
+      "support": 200,
+      "false_positive_rate": 0.0019,
+      "false_positives": 1,
+      "true_negatives": 519
+    },
+    "Lavazza Coffee": {
+      "precision": 0.7883,
+      "recall": 0.9511,
+      "f1_score": 0.8621,
+      "support": 184,
+      "false_positive_rate": 0.0877,
+      "false_positives": 47,
+      "true_negatives": 489
+    },
+    "Primia Coffee": {
+      "precision": 0.9362,
+      "recall": 0.6471,
+      "f1_score": 0.7652,
+      "support": 136,
+      "false_positive_rate": 0.0103,
+      "false_positives": 6,
+      "true_negatives": 578
+    }
+  },
+  "ambient_air_false_alarm_rate": 0.0269,
+  "ood_unknown_rejection": {
+    "threshold_0.5": {
+      "threshold": 0.5,
+      "rejected_as_unknown": 0,
+      "total_unseen_samples": 1167,
+      "unknown_rejection_rate": 0.0,
+      "false_classification_rate": 1.0
+    },
+    "threshold_0.6": {
+      "threshold": 0.6,
+      "rejected_as_unknown": 90,
+      "total_unseen_samples": 1167,
+      "unknown_rejection_rate": 0.0771,
+      "false_classification_rate": 0.9229
+    },
+    "threshold_0.7": {
+      "threshold": 0.7,
+      "rejected_as_unknown": 90,
+      "total_unseen_samples": 1167,
+      "unknown_rejection_rate": 0.0771,
+      "false_classification_rate": 0.9229
+    },
+    "threshold_0.8": {
+      "threshold": 0.8,
+      "rejected_as_unknown": 91,
+      "total_unseen_samples": 1167,
+      "unknown_rejection_rate": 0.078,
+      "false_classification_rate": 0.922
+    }
+  },
+  "safety_and_provenance_disclaimer": "Electronic-nose classifications are statistical pattern recognitions over transient MOS resistance curves. They do NOT constitute quantitative chemical concentration assays and MUST NOT be used for toxic or combustible gas hazard determination."
+}

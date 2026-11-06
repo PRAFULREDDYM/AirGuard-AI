@@ -1,0 +1,131 @@
+{
+  "upstream_random_stratified": {
+    "accuracy": 0.9163,
+    "accuracy_95ci": [
+      0.8968,
+      0.9372
+    ],
+    "macro_f1": 0.9133,
+    "macro_f1_95ci": [
+      0.8928,
+      0.9338
+    ],
+    "ece": 0.105,
+    "leakage_level": "CRITICAL (Adjacent-cycle temporal leakage)"
+  },
+  "phase3_block_groupkfold": {
+    "accuracy": 0.9056,
+    "accuracy_95ci": [
+      0.8833,
+      0.925
+    ],
+    "macro_f1": 0.8908,
+    "macro_f1_95ci": [
+      0.8651,
+      0.9122
+    ],
+    "ece": 0.1005,
+    "leakage_level": "MODERATE (Contiguous block holdout from single continuous session)"
+  },
+  "chronological_temporal_holdout": {
+    "accuracy": 0.5162,
+    "accuracy_95ci": [
+      0.4849,
+      0.5507
+    ],
+    "macro_f1": 0.3786,
+    "macro_f1_95ci": [
+      0.3648,
+      0.3918
+    ],
+    "ece": 0.3022,
+    "confusion_matrix": [
+      [
+        217,
+        0,
+        3,
+        0
+      ],
+      [
+        1,
+        242,
+        10,
+        0
+      ],
+      [
+        238,
+        2,
+        4,
+        0
+      ],
+      [
+        174,
+        0,
+        6,
+        0
+      ]
+    ],
+    "per_class_metrics": {
+      "Ambient Air": {
+        "precision": 0.3444,
+        "recall": 0.9864,
+        "f1_score": 0.5106,
+        "support": 220,
+        "false_positive_rate": 0.61
+      },
+      "Borbone Coffee": {
+        "precision": 0.9918,
+        "recall": 0.9565,
+        "f1_score": 0.9738,
+        "support": 253,
+        "false_positive_rate": 0.0031
+      },
+      "Lavazza Coffee": {
+        "precision": 0.1739,
+        "recall": 0.0164,
+        "f1_score": 0.03,
+        "support": 244,
+        "false_positive_rate": 0.0291
+      },
+      "Primia Coffee": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "support": 180,
+        "false_positive_rate": 0.0
+      }
+    },
+    "leakage_level": "ZERO LEAKAGE (Strict forward-time holdout)"
+  },
+  "drift_compensated_temporal_holdout": {
+    "accuracy": 0.4482,
+    "accuracy_95ci": [
+      0.4181,
+      0.4827
+    ],
+    "macro_f1": 0.3818,
+    "macro_f1_95ci": [
+      0.3611,
+      0.4029
+    ],
+    "ece": 0.2203
+  },
+  "ood_rejection_audit": {
+    "threshold_0.5": {
+      "block_model_rejection_rate": 0.0,
+      "temporal_model_rejection_rate": 0.0771
+    },
+    "threshold_0.6": {
+      "block_model_rejection_rate": 0.0771,
+      "temporal_model_rejection_rate": 0.0771
+    },
+    "threshold_0.7": {
+      "block_model_rejection_rate": 0.0771,
+      "temporal_model_rejection_rate": 0.078
+    },
+    "threshold_0.8": {
+      "block_model_rejection_rate": 0.078,
+      "temporal_model_rejection_rate": 0.1157
+    }
+  }
+}

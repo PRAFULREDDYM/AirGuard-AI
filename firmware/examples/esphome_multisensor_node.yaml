@@ -1,0 +1,87 @@
+# AirGuard AI — Multi-Sensor Node Firmware (ESPHome)
+# Hardware: ESP32 + Bosch BME688 (I2C) + Plantower PMS5003 (UART) + Senseair S8 (UART)
+
+esphome:
+  name: airguard-lab-node-01
+  friendly_name: "AirGuard Multi-Sensor Node"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: "YOUR_WIFI_SSID"
+  password: "YOUR_WIFI_PASSWORD"
+  fast_connect: true
+
+logger:
+  level: INFO
+
+uart:
+  - id: uart_pms
+    tx_pin: GPIO17
+    rx_pin: GPIO16
+    baud_rate: 9600
+  - id: uart_s8
+    tx_pin: GPIO25
+    rx_pin: GPIO26
+    baud_rate: 9600
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+  frequency: 400kHz
+
+sensor:
+  # 1. Bosch BME688 Environmental Sensor (I2C)
+  - platform: bme680_bsec
+    temperature:
+      name: "Ambient Temperature"
+      id: bme_temp
+    humidity:
+      name: "Relative Humidity"
+      id: bme_hum
+    pressure:
+      name: "Barometric Pressure"
+      id: bme_press
+    gas_resistance:
+      name: "Gas Resistance"
+      id: bme_gas
+    iaq:
+      name: "Indoor Air Quality Index"
+      id: bme_iaq
+    co2_equivalent:
+      name: "Estimated eCO2 (Derived)"
+      id: bme_eco2
+    breath_voc_equivalent:
+      name: "Breath VOC"
+      id: bme_bvoc
+
+  # 2. Plantower PMS5003 Particulate Matter Sensor (UART)
+  - platform: pmsx003
+    uart_id: uart_pms
+    type: PMSX003
+    pm_1_0:
+      name: "Particulate Matter PM1.0"
+      id: pms_pm1
+    pm_2_5:
+      name: "Particulate Matter PM2.5"
+      id: pms_pm25
+    pm_10_0:
+      name: "Particulate Matter PM10"
+      id: pms_pm10
+
+  # 3. Senseair S8 True NDIR Carbon Dioxide Sensor (UART)
+  - platform: senseair
+    uart_id: uart_s8
+    co2:
+      name: "NDIR Carbon Dioxide"
+      id: senseair_co2
+    update_interval: 10s
+
+mqtt:
+  broker: 192.168.1.100
+  port: 1883
+  topic_prefix: airguard/lab_node_01

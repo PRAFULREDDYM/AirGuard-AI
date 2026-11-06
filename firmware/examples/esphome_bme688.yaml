@@ -1,0 +1,63 @@
+# AirGuard AI — Example ESPHome Firmware for BME688 Sensor Node
+# Hardware: ESP32 + Bosch BME688 4-in-1 Sensor (I2C)
+
+esphome:
+  name: airguard-livingroom-node
+  friendly_name: "AirGuard Living Room Sensor"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+wifi:
+  ssid: "YOUR_WIFI_SSID"
+  password: "YOUR_WIFI_PASSWORD"
+  fast_connect: true
+
+logger:
+
+api:
+  encryption:
+    key: "YOUR_NOISE_PSK_KEY"
+
+ota:
+  password: "OTA_PASSWORD"
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+  frequency: 400kHz
+
+sensor:
+  - platform: bme680_bsec
+    temperature:
+      name: "Temperature"
+      id: bme_temp
+    humidity:
+      name: "Relative Humidity"
+      id: bme_hum
+    pressure:
+      name: "Barometric Pressure"
+      id: bme_press
+    gas_resistance:
+      name: "Raw Gas Resistance"
+      id: bme_gas
+    iaq:
+      name: "Indoor Air Quality"
+      id: bme_iaq
+    co2_equivalent:
+      name: "Estimated eCO2"
+      id: bme_eco2
+    breath_voc_equivalent:
+      name: "Breath VOC"
+      id: bme_bvoc
+
+mqtt:
+  broker: 192.168.1.50
+  port: 1883
+  discovery: true
+  discovery_prefix: homeassistant
+  topic_prefix: airguard/livingroom
+

@@ -1,0 +1,76 @@
+name: AirGuard AI CI Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-tests:
+    name: Backend Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r services/api/requirements.txt
+          pip install -r services/ml_molecular/requirements.txt
+          pip install -r services/ml_environment/requirements.txt
+          pip install amqtt pytest-asyncio pytest-cov httpx
+
+      - name: Run Alembic schema migrations (SQLite test)
+        run: |
+          PYTHONPATH=. alembic upgrade head
+
+      - name: Run Unit & Integration Tests
+        run: |
+          PYTHONPATH=. pytest tests/unit/ tests/integration/ --cov=services --cov-report=xml --cov-report=term
+
+  frontend-build:
+    name: Frontend Build & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd apps/web && npm ci
+
+      - name: Build Next.js Application
+        run: |
+          cd apps/web && npm run build
+        env:
+          NEXT_PUBLIC_API_URL: "http://127.0.0.1:8000/api/v1"
+
+  security-scan:
+    name: Security & Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for uncommitted .env secrets
+        run: |
+          if [ -f .env ]; then
+            echo "ERROR: .env file found in repository!"
+            exit 1
+          fi
+          echo "No committed .env files found."
