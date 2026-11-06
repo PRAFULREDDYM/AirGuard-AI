@@ -88,6 +88,29 @@ The demo environment immediately seeds:
 
 ---
 
+## 🔌 Hardware Connectivity & Consumer Onboarding (Phase 7)
+
+AirGuard AI provides a consumer-friendly, zero-configuration device pairing flow that eliminates terminal commands, manual YAML configuration, and raw IP address entry for ordinary home users.
+
+### 🎯 Three Operational Capability Tiers
+AirGuard strictly surfaces device capabilities across three unambiguous tiers:
+- **Tier 1 (Basic Actuation & Control):** Controllable smart purifiers (Levoit Core 200S/300S/400S/600S, Xiaomi Smart Air Purifier 4/Pro/Compact, Coway, Philips, IKEA Starkvind). Discrete fan speeds, modes, and safe automated clean-air throttling.
+- **Tier 2 (Air-Quality Monitoring):** Laser particulate monitors (AirGradient ONE, Awair Element, PurpleAir). Direct NDIR CO2, PM2.5, PM10, Sensirion SGP41 TVOC & NOx indices.
+- **Tier 3 (Advanced Odor-Pattern Recognition):** Multi-gas heated MOX sensor arrays (AirGuard Sensor Node / BME688 10-step temperature-ramped resistance). **Hardware lacking MOX gas sensors is explicitly flagged as "Tier 3 Odor AI Not Available on this hardware"**; odor predictions are never fabricated from standard particulate readings.
+
+### 🛡️ Conservative Emergency Suspended State (`EMERGENCY_SUSPENDED`)
+Unlike naive smart home scripts that attempt to switch electrical fans or relays "OFF" during fire or gas leaks (which risks contact spark ignition in explosive gas mixtures or disrupts certified building smoke evacuation systems), AirGuard enters **`EMERGENCY_SUSPENDED`**:
+- Halts all automated switching immediately.
+- Leaves electrical relays untouched to prevent contact arcing.
+- Alerts the user with prominent emergency evacuation guidance.
+
+### 🔒 Gateway Security & Cross-Home IDOR Defense
+- **Strict SSRF Protection:** Gateway discovery rejects cloud metadata (`169.254.169.254`), public WAN IP ranges, and restricts probing exclusively to whitelisted IoT ports (`80, 8080, 8123, 9926, 6053, 1883, 8883, 8000`).
+- **Cross-Home Isolation:** Multi-tenant device endpoints enforce home ownership validation (`Home.owner_id == current_user.id`), rejecting cross-account tampering with `403 Forbidden`.
+- **At-Rest Encryption:** Manufacturer credentials and tokens are encrypted with AES-256-GCM before storage.
+
+---
+
 ## 🔌 Hardware Connectivity Guide
 
 ### 1. Home Assistant

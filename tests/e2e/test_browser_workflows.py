@@ -27,7 +27,7 @@ async def test_complete_browser_e2e_suite():
         # 2. Testing Devices Page and Add Device Form
         print("\n--- 2. Testing Devices Onboarding ---")
         await page.goto(f"{FRONTEND_URL}/devices", wait_until="networkidle")
-        await expect(page.locator("h1")).to_contain_text("Connected Devices")
+        await expect(page.locator("h1")).to_contain_text("Devices")
         
         # Navigate to Add Device
         await page.goto(f"{FRONTEND_URL}/devices/add", wait_until="networkidle")

@@ -22,6 +22,8 @@ class SafetyEngine:
     ) -> Tuple[bool, str]:
         """
         Validates whether a proposed automation action is safe according to non-negotiable safety rules.
+        Replaces blanket electrical actuation with a conservative emergency state that suspends
+        ordinary automation during hazards and leaves certified safety equipment under intended controls.
         Returns: (is_allowed: bool, reason: str)
         """
         cmd_lower = command.strip().lower()
@@ -34,12 +36,20 @@ class SafetyEngine:
         if "disable" in cmd_lower and "alarm" in cmd_lower:
             return False, "SAFETY VIOLATION: Disabling certified safety alarms is prohibited."
 
-        # Rule 5: Never activate fans or electrical switches for suspected combustible-gas leaks or fire
+        # Rule 5: Conservative Emergency State: Suspend ordinary automation during fire or combustible gas
+        # Blanket electrical actuation is avoided to prevent relay contact sparks (ignition hazard)
+        # or fan-induced smoke dispersion. Certified equipment operates independently.
         if suspected_hazard in ["gas_leak", "combustible_gas", "fire", "smoke"]:
-            return False, f"SAFETY VIOLATION: Electrical switching/fans prohibited during suspected {suspected_hazard} to prevent explosion or smoke spreading."
+            return False, (
+                f"SAFETY VIOLATION / EMERGENCY SUSPENDED: Automated switching suspended due to suspected {suspected_hazard}. "
+                "Ordinary device control halted to eliminate spark ignition hazards and leave certified life-safety systems unhindered."
+            )
 
         if current_event_severity == EventSeverity.CERTIFIED_ALARM:
-            return False, "SAFETY VIOLATION: Certified life-safety alarm active. Emergency guidance surfaced; automated device actuation disabled."
+            return False, (
+                "SAFETY VIOLATION / EMERGENCY SUSPENDED: Certified life-safety alarm active. "
+                "Automated device actuation suspended; follow building evacuation protocols."
+            )
 
         # Check device authorization
         if not device.automation_authorized:

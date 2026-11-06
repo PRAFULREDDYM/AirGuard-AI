@@ -118,9 +118,57 @@ export default function DevicesPage() {
   };
 
   const handleDeleteDevice = async (devId: string) => {
-    if (!confirm("Are you sure you want to disconnect and delete this device?")) return;
+    if (!confirm("Are you sure you want to delete this device record?")) return;
     await api.deleteDevice(devId);
     await loadData();
+  };
+
+  const handleRefreshHealth = async (devId: string) => {
+    try {
+      const res = await api.refreshDeviceHealth(devId);
+      setActionMessage(`${res.name}: ${res.status_detail}`);
+      setTimeout(() => setActionMessage(null), 4000);
+      await loadData();
+    } catch (e: any) {
+      setActionMessage("Could not refresh device health.");
+      setTimeout(() => setActionMessage(null), 4000);
+    }
+  };
+
+  const handleDisconnectDevice = async (devId: string) => {
+    if (!confirm("Are you sure you want to disconnect this device and suspend its automations?")) return;
+    try {
+      const res = await api.disconnectDevice(devId);
+      setActionMessage(res.message);
+      setTimeout(() => setActionMessage(null), 4000);
+      await loadData();
+    } catch (e: any) {
+      setActionMessage("Failed to disconnect device.");
+      setTimeout(() => setActionMessage(null), 4000);
+    }
+  };
+
+  const isTier1Control = (dev: any) => Boolean(dev.is_controllable);
+
+  const isTier2Monitoring = (dev: any) => {
+    const measurements = dev.capabilities?.measurements || [];
+    return measurements.length > 0;
+  };
+
+  const isTier3OdorAI = (dev: any) => {
+    const name = (dev.name || "").toLowerCase();
+    const model = (dev.model || "").toLowerCase();
+    const measurements = (dev.capabilities?.measurements || []).map((m: any) =>
+      typeof m === "string" ? m.toLowerCase() : (m.type || "").toLowerCase()
+    );
+    return (
+      name.includes("bme688") ||
+      name.includes("airguard") ||
+      name.includes("mox") ||
+      model.includes("bme688") ||
+      model.includes("nose") ||
+      measurements.some((m: string) => m.includes("gas_resistance") || m.includes("mox"))
+    );
   };
 
   const handleApplyPresetForRoom = async (roomSummary: any) => {
@@ -289,8 +337,62 @@ export default function DevicesPage() {
                     </div>
                   </div>
 
+                  {/* 3-Tier Operational Capability Surface */}
+                  <div className="mt-4 pt-3 border-t border-border/60 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      <span>Capability Tiers</span>
+                      <span className="text-[10px] lowercase text-primary font-normal">
+                        {isTier3OdorAI(dev) ? "full AI stack" : (isTier1Control(dev) ? "actuator" : "telemetry station")}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-1.5 text-center">
+                      {/* Tier 1: Control */}
+                      <div className={`p-2 rounded-lg border text-[11px] transition-colors ${
+                        isTier1Control(dev)
+                          ? "bg-blue-500/10 border-blue-500/30 text-blue-400 font-semibold"
+                          : "bg-muted/20 border-border/30 text-muted-foreground/60"
+                      }`}>
+                        <div className="font-bold text-[10px]">Tier 1</div>
+                        <div className="text-[11px]">Control</div>
+                        <div className="text-[9px] mt-0.5">{isTier1Control(dev) ? "Active" : "None"}</div>
+                      </div>
+
+                      {/* Tier 2: Monitoring */}
+                      <div className={`p-2 rounded-lg border text-[11px] transition-colors ${
+                        isTier2Monitoring(dev)
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold"
+                          : "bg-muted/20 border-border/30 text-muted-foreground/60"
+                      }`}>
+                        <div className="font-bold text-[10px]">Tier 2</div>
+                        <div className="text-[11px]">Air Quality</div>
+                        <div className="text-[9px] mt-0.5">{isTier2Monitoring(dev) ? "Active" : "None"}</div>
+                      </div>
+
+                      {/* Tier 3: Odor AI */}
+                      <div className={`p-2 rounded-lg border text-[11px] transition-colors ${
+                        isTier3OdorAI(dev)
+                          ? "bg-purple-500/10 border-purple-500/30 text-purple-400 font-semibold"
+                          : "bg-muted/20 border-border/30 text-muted-foreground/60"
+                      }`}>
+                        <div className="font-bold text-[10px]">Tier 3</div>
+                        <div className="text-[11px]">Odor AI</div>
+                        <div className="text-[9px] mt-0.5">
+                          {isTier3OdorAI(dev) ? "Active (MOX)" : "Not Available"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {!isTier3OdorAI(dev) && (
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 pt-1">
+                        <Info className="w-3 h-3 text-muted-foreground shrink-0" />
+                        <span>Odor classification requires BME688 MOX gas resistance sensor.</span>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Capabilities List */}
-                  <div className="mt-4 flex flex-wrap gap-1.5">
+                  <div className="mt-3 flex flex-wrap gap-1.5">
                     {dev.capabilities?.measurements?.slice(0, 4).map((m: any, idx: number) => (
                       <span
                         key={idx}
@@ -359,7 +461,7 @@ export default function DevicesPage() {
                   )}
                 </div>
 
-                {/* Footer Status & Delete */}
+                {/* Footer Status & Lifecycle Actions */}
                 <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
                     <span
@@ -368,17 +470,35 @@ export default function DevicesPage() {
                       }`}
                     />
                     <span className="text-muted-foreground font-medium">
-                      {dev.is_online ? "Online & Calibrated" : "Offline"}
+                      {dev.is_online ? "Online & Calibrated" : "Offline / Unreachable"}
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => handleDeleteDevice(dev.id)}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    title="Disconnect Device"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleRefreshHealth(dev.id)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      title="Check Connection Health"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={() => handleDisconnectDevice(dev.id)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 transition-colors"
+                      title="Safely Disconnect Device"
+                    >
+                      <Power className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteDevice(dev.id)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      title="Delete Device Record"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))

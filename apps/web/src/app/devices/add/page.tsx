@@ -667,7 +667,41 @@ export default function AddDeviceWizardPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-2 text-center pb-2">
+              <div className={`p-2.5 rounded-xl border text-xs ${
+                selectedCatalogItem?.is_controllable
+                  ? "bg-blue-500/10 border-blue-500/30 text-blue-400 font-semibold"
+                  : "bg-muted/20 border-border/30 text-muted-foreground/60"
+              }`}>
+                <div className="font-bold text-[10px] uppercase">Tier 1</div>
+                <div>Basic Control</div>
+                <div className="text-[10px] mt-0.5">{selectedCatalogItem?.is_controllable ? "Active" : "None"}</div>
+              </div>
+
+              <div className={`p-2.5 rounded-xl border text-xs ${
+                (selectedCatalogItem?.supported_sensors || []).length > 0
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold"
+                  : "bg-muted/20 border-border/30 text-muted-foreground/60"
+              }`}>
+                <div className="font-bold text-[10px] uppercase">Tier 2</div>
+                <div>Air Quality</div>
+                <div className="text-[10px] mt-0.5">{(selectedCatalogItem?.supported_sensors || []).length > 0 ? "Active" : "None"}</div>
+              </div>
+
+              <div className={`p-2.5 rounded-xl border text-xs ${
+                (selectedCatalogItem?.supported_sensors || []).some((s: string) => s.toLowerCase().includes("mox") || s.toLowerCase().includes("gas"))
+                  ? "bg-purple-500/10 border-purple-500/30 text-purple-400 font-semibold"
+                  : "bg-muted/20 border-border/30 text-muted-foreground/60"
+              }`}>
+                <div className="font-bold text-[10px] uppercase">Tier 3</div>
+                <div>Odor AI</div>
+                <div className="text-[10px] mt-0.5">
+                  {(selectedCatalogItem?.supported_sensors || []).some((s: string) => s.toLowerCase().includes("mox") || s.toLowerCase().includes("gas")) ? "Active (MOX)" : "Not Available"}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1">
                     <Usb className="w-4 h-4 text-primary" /> WebSerial / Improv Wi-Fi
@@ -800,6 +834,40 @@ export default function AddDeviceWizardPage() {
             <p className="text-xs text-muted-foreground">
               AirGuard strictly separates measurement sensors from controllable fans and switches.
             </p>
+
+            <div className="grid grid-cols-3 gap-2 text-center pb-2">
+              <div className={`p-2.5 rounded-xl border text-xs ${
+                selectedCatalogItem?.is_controllable
+                  ? "bg-blue-500/10 border-blue-500/30 text-blue-400 font-semibold"
+                  : "bg-muted/20 border-border/30 text-muted-foreground/60"
+              }`}>
+                <div className="font-bold text-[10px] uppercase">Tier 1</div>
+                <div>Basic Control</div>
+                <div className="text-[10px] mt-0.5">{selectedCatalogItem?.is_controllable ? "Active" : "None"}</div>
+              </div>
+
+              <div className={`p-2.5 rounded-xl border text-xs ${
+                (selectedCatalogItem?.supported_sensors || []).length > 0
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold"
+                  : "bg-muted/20 border-border/30 text-muted-foreground/60"
+              }`}>
+                <div className="font-bold text-[10px] uppercase">Tier 2</div>
+                <div>Air Quality</div>
+                <div className="text-[10px] mt-0.5">{(selectedCatalogItem?.supported_sensors || []).length > 0 ? "Active" : "None"}</div>
+              </div>
+
+              <div className={`p-2.5 rounded-xl border text-xs ${
+                (selectedCatalogItem?.supported_sensors || []).some((s: string) => s.toLowerCase().includes("mox") || s.toLowerCase().includes("gas"))
+                  ? "bg-purple-500/10 border-purple-500/30 text-purple-400 font-semibold"
+                  : "bg-muted/20 border-border/30 text-muted-foreground/60"
+              }`}>
+                <div className="font-bold text-[10px] uppercase">Tier 3</div>
+                <div>Odor AI</div>
+                <div className="text-[10px] mt-0.5">
+                  {(selectedCatalogItem?.supported_sensors || []).some((s: string) => s.toLowerCase().includes("mox") || s.toLowerCase().includes("gas")) ? "Active (MOX)" : "Not Available"}
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Sensors Column */}

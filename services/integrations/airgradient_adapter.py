@@ -9,10 +9,16 @@ from services.integrations.base_adapter import (
 
 class AirGradientAdapter:
     def __init__(self, host: str, port: int = 80):
-        # host can be IP or airgradient_<serial>.local
-        self.host = host.strip().replace("http://", "").replace("https://", "").rstrip("/")
-        self.port = port
-        self.base_url = f"http://{self.host}:{self.port}"
+        # host can be IP, hostname, or full path for test fixtures
+        cleaned = host.strip().replace("http://", "").replace("https://", "").rstrip("/")
+        if ":" in cleaned or "/" in cleaned:
+            self.host = cleaned
+            self.port = port
+            self.base_url = f"http://{cleaned}"
+        else:
+            self.host = cleaned
+            self.port = port
+            self.base_url = f"http://{self.host}:{self.port}"
 
     async def test_connection(self) -> bool:
         """Tests local HTTP connection to /measures/current."""
@@ -118,13 +124,14 @@ class AirGradientAdapter:
             })
 
         # TVOC Index (Sensirion SGP41)
-        if data.get("tvocIndex") is not None:
+        tvoc_val = data.get("tvocIndex") if data.get("tvocIndex") is not None else data.get("tvoc_index")
+        if tvoc_val is not None:
             readings.append({
                 "device_id": device_id,
                 "sensor_id": "tvocIndex",
                 "timestamp": now,
                 "measurement_type": MeasurementType.VOC_INDEX,
-                "value": float(data["tvocIndex"]),
+                "value": float(tvoc_val),
                 "unit": "index",
                 "provenance": DataProvenance.MEASURED,
                 "calibration_quality": CalibrationQuality.CALIBRATED,
@@ -132,13 +139,14 @@ class AirGradientAdapter:
             })
 
         # NOx Index (Sensirion SGP41)
-        if data.get("noxIndex") is not None:
+        nox_val = data.get("noxIndex") if data.get("noxIndex") is not None else data.get("nox_index")
+        if nox_val is not None:
             readings.append({
                 "device_id": device_id,
                 "sensor_id": "noxIndex",
                 "timestamp": now,
                 "measurement_type": MeasurementType.NOX_INDEX,
-                "value": float(data["noxIndex"]),
+                "value": float(nox_val),
                 "unit": "index",
                 "provenance": DataProvenance.MEASURED,
                 "calibration_quality": CalibrationQuality.CALIBRATED,
