@@ -52,3 +52,4 @@ To eliminate consumer confusion and ensure absolute safety compliance:
 - **Target Hardware:** AirGuard Hardware Sensor Node / BME688 MOX multi-gas resistance sensor array.
 - **Functions:** 10-step temperature-ramped gas resistance timeseries, session-grouped electronic-nose inference, odor descriptor classification (sweet, fruity, solvent, sulfurous, burnt, etc.).
 - **Strict Limitation:** Ordinary air purifiers lacking heated MOX gas sensors are explicitly labeled **"Tier 3 Odor AI Not Available on this hardware"**. Odor predictions are never fabricated from standard PM2.5 or VOC index readings.
+

@@ -87,9 +87,35 @@ async def apply_preset(
     if not purifier.is_controllable and req.mode == "auto_control":
         raise HTTPException(status_code=400, detail="The selected device is a read-only sensor and cannot be controlled.")
 
-    # If auto_control, explicitly authorize device automation
+    if req.preset_id == "odor_eliminator" and req.mode == "auto_control":
+        raise HTTPException(
+            status_code=400,
+            detail="SAFETY INVARIANT: Automatic purifier control from unvalidated VOC or odor classifications is prohibited. Use 'notify_only' mode."
+        )
+
+    # If auto_control, explicitly authorize device automation and ensure consent
     if req.mode == "auto_control":
         purifier.automation_authorized = True
+        from services.api.models import UserConsent
+        consent_res = await db.execute(
+            select(UserConsent).where(
+                UserConsent.user_id == current_user.id,
+                UserConsent.permission_type == "DEVICE_CONTROL",
+                UserConsent.is_active == True
+            )
+        )
+        if not consent_res.scalars().first():
+            new_c = UserConsent(
+                user_id=current_user.id,
+                home_id=req.home_id,
+                device_id=purifier.id,
+                permission_type="DEVICE_CONTROL",
+                authorized_actions=["fan.set_speed", "fan.turn_on", "fan.turn_off"],
+                consent_version="1.0",
+                consent_origin="automation_preset",
+                is_active=True
+            )
+            db.add(new_c)
         await db.commit()
 
     if req.preset_id == "clean_air_guard":
@@ -245,4 +271,36 @@ async def list_executions(
     res = await db.execute(query)
     execs = res.scalars().all()
     return [AutomationExecutionResponse.model_validate(e) for e in execs]
+
+@router.post("/pause-all")
+async def pause_all_automations(
+    home_id: str,
+    paused: bool = True,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Emergency kill-switch: pauses or resumes all automated device actuation across the home.
+    Halts any running automation execution immediately.
+    """
+    home_res = await db.execute(select(Home).where(Home.id == home_id, Home.owner_id == current_user.id))
+    home = home_res.scalars().first()
+    if not home:
+        raise HTTPException(status_code=404, detail="Home not found.")
+
+    home.automations_paused = paused
+    from services.api.models import AuditLog
+    audit = AuditLog(
+        user_id=current_user.id,
+        action="AUTOMATIONS_PAUSED" if paused else "AUTOMATIONS_RESUMED",
+        details={"home_id": home.id, "automations_paused": paused}
+    )
+    db.add(audit)
+    await db.commit()
+
+    return {
+        "home_id": home.id,
+        "automations_paused": home.automations_paused,
+        "message": "All AirGuard automations have been paused." if paused else "All AirGuard automations have been resumed."
+    }
 

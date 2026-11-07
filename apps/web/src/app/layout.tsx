@@ -18,7 +18,9 @@ import {
   Radio,
   Sun,
   Moon,
-  Plus
+  Plus,
+  Sparkles,
+  Power
 } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -31,6 +33,29 @@ export default function RootLayout({
   const [isDark, setIsDark] = useState(false);
   const [wsConnected, setWsConnected] = useState(false);
   const [activeScenario, setActiveScenario] = useState("normal");
+  const [automationsPaused, setAutomationsPaused] = useState(false);
+  const [homeId, setHomeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadHome() {
+      try {
+        const homes = await api.getHomes();
+        if (homes && homes.length > 0) {
+          setHomeId(homes[0].id);
+          setAutomationsPaused(Boolean(homes[0].automations_paused));
+        }
+      } catch (e) {}
+    }
+    loadHome();
+  }, []);
+
+  const handleTogglePause = async () => {
+    if (!homeId) return;
+    try {
+      const res = await api.pauseAllAutomations(homeId, !automationsPaused);
+      setAutomationsPaused(res.automations_paused);
+    } catch (e) {}
+  };
 
   useEffect(() => {
     // Check initial dark mode
@@ -70,6 +95,7 @@ export default function RootLayout({
     { label: "Overview", href: "/", icon: LayoutDashboard },
     { label: "Rooms", href: "/rooms", icon: HomeIcon },
     { label: "Devices", href: "/devices", icon: Cpu },
+    { label: "Onboarding Wizard", href: "/onboarding", icon: Sparkles },
     { label: "Events & Alerts", href: "/events", icon: AlertTriangle },
     { label: "Automations", href: "/automations", icon: Zap },
     { label: "AI Model Lab", href: "/models", icon: FlaskConical },
@@ -158,13 +184,27 @@ export default function RootLayout({
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col overflow-y-auto min-h-screen">
-          {/* Top Banner indicating Simulation Mode */}
+          {/* Top Banner indicating Simulation Mode & Global Automations Kill Switch */}
           <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-2 flex items-center justify-between text-xs text-amber-700 dark:text-amber-300">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-[10px]">
                 Simulation Adapter Available
               </span>
-              <span>Synthetic readings are unmistakably labeled. Real hardware adapters connect via Devices menu.</span>
+              <span className="hidden sm:inline">Synthetic readings are labeled. Real hardware connects via Devices.</span>
+
+              {/* Global Automations Pause Kill-Switch */}
+              <button
+                onClick={handleTogglePause}
+                className={`px-2.5 py-1 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-sm ${
+                  automationsPaused
+                    ? "bg-destructive text-destructive-foreground animate-pulse"
+                    : "bg-card border border-border text-foreground hover:bg-destructive/10 hover:text-destructive"
+                }`}
+                title="Global Automation Pause: Halts all automated purifier switching immediately"
+              >
+                <Power className="w-3.5 h-3.5" />
+                {automationsPaused ? "AUTOMATIONS PAUSED" : "Pause All Automations"}
+              </button>
             </div>
             <div className="flex items-center gap-2">
               <span>Test Scenario:</span>

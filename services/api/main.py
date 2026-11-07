@@ -8,7 +8,7 @@ from services.api.config import settings
 from services.api.database import init_db, AsyncSessionLocal
 from services.api.routers import (
     auth, homes, rooms, devices, readings, events, automations, models, websocket,
-    gateway, catalog
+    gateway, catalog, consents, notifications
 )
 from services.integrations.mock_providers import mock_router
 from services.integrations.simulation_adapter import simulation_adapter
@@ -97,6 +97,8 @@ app.include_router(automations.router, prefix=v1)
 app.include_router(models.router, prefix=v1)
 app.include_router(gateway.router, prefix=v1)
 app.include_router(catalog.router, prefix=v1)
+app.include_router(consents.router, prefix=v1)
+app.include_router(notifications.router, prefix=v1)
 app.include_router(mock_router)
 app.include_router(websocket.router)
 

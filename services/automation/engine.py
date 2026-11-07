@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 
 from services.api.models import (
     AutomationRule, AutomationExecution, Device, SensorReading,
-    MeasurementType, EventSeverity
+    MeasurementType, EventSeverity, Home, UserConsent
 )
 from services.automation.safety import SafetyEngine
 from services.ingestion.service import ws_manager
@@ -21,11 +21,18 @@ class AutomationEngine:
         """
         Evaluates active automation rules when a new sensor reading arrives.
         Executes permitted actions and logs execution records.
+        Enforces 14 safety invariants, global pause kill switch, and consent verification.
         """
         # Get device to know the room/home
         dev_res = await db.execute(select(Device).where(Device.id == reading.device_id))
         source_device = dev_res.scalars().first()
         if not source_device:
+            return []
+
+        # Check if home automations are globally paused
+        home_res = await db.execute(select(Home).where(Home.id == source_device.home_id))
+        home = home_res.scalars().first()
+        if home and getattr(home, "automations_paused", False):
             return []
 
         # Find enabled rules for this home/room and measurement type
@@ -39,6 +46,18 @@ class AutomationEngine:
         executions = []
 
         now = datetime.utcnow()
+
+        # Query consent for DEVICE_CONTROL
+        consent = None
+        if home:
+            consent_res = await db.execute(
+                select(UserConsent).where(
+                    UserConsent.user_id == home.owner_id,
+                    UserConsent.permission_type == "DEVICE_CONTROL",
+                    UserConsent.is_active == True
+                )
+            )
+            consent = consent_res.scalars().first()
 
         for rule in rules:
             # Check room match if rule is room-scoped
@@ -107,11 +126,16 @@ class AutomationEngine:
                 db.add(exec_record)
                 continue
 
-            # SAFETY VALIDATION
+            # SAFETY VALIDATION — 14 Safety Invariants Check
             is_allowed, safety_reason = SafetyEngine.validate_automation_action(
                 device=target_device,
                 command=command,
-                parameters=params
+                parameters=params,
+                home=home,
+                consent=consent,
+                reading_timestamp=reading.timestamp,
+                trigger_measurement_type=reading.measurement_type.value,
+                sensor_room_id=source_device.room_id
             )
 
             if not is_allowed:

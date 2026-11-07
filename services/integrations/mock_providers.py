@@ -229,3 +229,4 @@ async def mock_airgradient_update(data: Dict[str, Any]):
     """Allows test fixtures to set dynamic sensor values."""
     _airgradient_state.update(data)
     return {"status": "updated", "current": _airgradient_state}
+

@@ -70,6 +70,8 @@ class User(Base):
 
     homes = relationship("Home", back_populates="owner", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user")
+    consents = relationship("UserConsent", back_populates="user", cascade="all, delete-orphan")
+    notification_preferences = relationship("NotificationPreference", back_populates="user", cascade="all, delete-orphan")
 
 class Home(Base):
     __tablename__ = "homes"
@@ -78,6 +80,7 @@ class Home(Base):
     name = Column(String(255), nullable=False)
     owner_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     address = Column(String(255), nullable=True)
+    automations_paused = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="homes")
@@ -85,6 +88,8 @@ class Home(Base):
     devices = relationship("Device", back_populates="home", cascade="all, delete-orphan")
     automation_rules = relationship("AutomationRule", back_populates="home", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="home", cascade="all, delete-orphan")
+    consents = relationship("UserConsent", back_populates="home", cascade="all, delete-orphan")
+    notification_preferences = relationship("NotificationPreference", back_populates="home", cascade="all, delete-orphan")
 
 class Room(Base):
     __tablename__ = "rooms"
@@ -196,10 +201,16 @@ class Alert(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     home_id = Column(String(36), ForeignKey("homes.id"), nullable=False)
     event_id = Column(String(36), ForeignKey("environmental_events.id"), nullable=True)
+    room_id = Column(String(36), ForeignKey("rooms.id"), nullable=True)
+    device_id = Column(String(36), ForeignKey("devices.id"), nullable=True)
     severity = Column(Enum(EventSeverity), nullable=False)
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
+    category = Column(String(50), default="ELEVATED_READING")  # ELEVATED_READING, OFFLINE_SENSOR, GATEWAY_DISCONNECTED, DEVICE_ERROR, ODOR_CLASSIFIED, CERTIFIED_ALARM
+    delivery_channel = Column(String(50), default="IN_APP")     # IN_APP, PUSH_NOTIFICATION, EMAIL
+    delivery_status = Column(String(50), default="DELIVERED")   # DELIVERED, PENDING, SUPPRESSED_QUIET_HOURS, SUPPRESSED_COOLDOWN
     is_read = Column(Boolean, default=False)
+    read_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     home = relationship("Home", back_populates="alerts")
@@ -284,3 +295,46 @@ class AuditLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="audit_logs")
+
+class UserConsent(Base):
+    __tablename__ = "user_consents"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    home_id = Column(String(36), ForeignKey("homes.id"), nullable=True, index=True)
+    device_id = Column(String(36), ForeignKey("devices.id"), nullable=True, index=True)
+    integration_scope = Column(String(100), nullable=True)
+    permission_type = Column(String(50), nullable=False, index=True)  # TELEMETRY_ACCESS, DEVICE_CONTROL, PUSH_NOTIFICATIONS, CLOUD_PROCESSING, AI_TRAINING_SHARE
+    authorized_actions = Column(JSON, default=list)                   # ["fan.set_speed", "fan.turn_on", "fan.turn_off"]
+    consent_version = Column(String(20), default="1.0")
+    consent_origin = Column(String(100), default="onboarding_wizard")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True)
+
+    user = relationship("User", back_populates="consents")
+    home = relationship("Home", back_populates="consents")
+    device = relationship("Device")
+
+class NotificationPreference(Base):
+    __tablename__ = "notification_preferences"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    home_id = Column(String(36), ForeignKey("homes.id"), nullable=False, index=True)
+    room_id = Column(String(36), ForeignKey("rooms.id"), nullable=True)
+    device_id = Column(String(36), ForeignKey("devices.id"), nullable=True)
+    event_category = Column(String(50), nullable=False)                # ELEVATED_READING, OFFLINE_SENSOR, GATEWAY_DISCONNECTED, DEVICE_ERROR, ODOR_CLASSIFIED, CERTIFIED_ALARM
+    delivery_channel = Column(String(50), default="IN_APP")            # IN_APP, PUSH_NOTIFICATION, EMAIL
+    enabled = Column(Boolean, default=True)
+    min_severity = Column(String(50), default="ELEVATED")
+    quiet_hours_enabled = Column(Boolean, default=False)
+    quiet_hours_start = Column(String(5), default="22:00")
+    quiet_hours_end = Column(String(5), default="07:00")
+    cooldown_minutes = Column(Integer, default=15)
+    last_notified_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="notification_preferences")
+    home = relationship("Home", back_populates="notification_preferences")

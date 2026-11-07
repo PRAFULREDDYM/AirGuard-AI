@@ -58,3 +58,4 @@ Connecting smart IoT hardware, local discovery gateways, and third-party smart-h
 | **Credential Encryption at Rest** | **VERIFIED** | AES-256-GCM cipher string persisted in database |
 | **Immutable Audit Logging** | **VERIFIED** | All command dispatches and disconnects logged to `AuditLog` |
 | **Rate-Limiting on Actuation** | **VERIFIED** | 30-second cooldown enforced between device commands |
+

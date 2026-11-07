@@ -39,6 +39,7 @@ class HomeResponse(BaseModel):
     name: str
     address: Optional[str]
     owner_id: str
+    automations_paused: bool = False
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
@@ -160,11 +161,17 @@ class EventAcknowledge(BaseModel):
 class AlertResponse(BaseModel):
     id: str
     home_id: str
-    event_id: Optional[str]
+    event_id: Optional[str] = None
+    room_id: Optional[str] = None
+    device_id: Optional[str] = None
     severity: EventSeverity
     title: str
     message: str
+    category: str = "ELEVATED_READING"
+    delivery_channel: str = "IN_APP"
+    delivery_status: str = "DELIVERED"
     is_read: bool
+    read_at: Optional[datetime] = None
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
@@ -280,3 +287,74 @@ class ConnectionResponse(BaseModel):
     last_sync_at: Optional[datetime]
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+# --- Consent & Permission Schemas ---
+class ConsentCreate(BaseModel):
+    home_id: Optional[str] = None
+    device_id: Optional[str] = None
+    integration_scope: Optional[str] = None
+    permission_type: str  # TELEMETRY_ACCESS, DEVICE_CONTROL, PUSH_NOTIFICATIONS, CLOUD_PROCESSING, AI_TRAINING_SHARE
+    authorized_actions: List[str] = []
+    consent_version: str = "1.0"
+    consent_origin: str = "onboarding_wizard"
+
+class ConsentResponse(BaseModel):
+    id: str
+    user_id: str
+    home_id: Optional[str]
+    device_id: Optional[str]
+    integration_scope: Optional[str]
+    permission_type: str
+    authorized_actions: List[str]
+    consent_version: str
+    consent_origin: str
+    is_active: bool
+    created_at: datetime
+    expires_at: Optional[datetime]
+    revoked_at: Optional[datetime]
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Notification Preference Schemas ---
+class NotificationPreferenceCreate(BaseModel):
+    home_id: str
+    room_id: Optional[str] = None
+    device_id: Optional[str] = None
+    event_category: str  # ELEVATED_READING, OFFLINE_SENSOR, GATEWAY_DISCONNECTED, DEVICE_ERROR, ODOR_CLASSIFIED, CERTIFIED_ALARM
+    delivery_channel: str = "IN_APP"
+    enabled: bool = True
+    min_severity: str = "ELEVATED"
+    quiet_hours_enabled: bool = False
+    quiet_hours_start: str = "22:00"
+    quiet_hours_end: str = "07:00"
+    cooldown_minutes: int = 15
+
+class NotificationPreferenceResponse(BaseModel):
+    id: str
+    user_id: str
+    home_id: str
+    room_id: Optional[str]
+    device_id: Optional[str]
+    event_category: str
+    delivery_channel: str
+    enabled: bool
+    min_severity: str
+    quiet_hours_enabled: bool
+    quiet_hours_start: str
+    quiet_hours_end: str
+    cooldown_minutes: int
+    last_notified_at: Optional[datetime]
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class NotificationTestRequest(BaseModel):
+    home_id: str
+    channel: str = "IN_APP"  # IN_APP, PUSH_NOTIFICATION
+
+# --- Onboarding Activation Schemas ---
+class OnboardingActivationRequest(BaseModel):
+    home_id: str
+    operating_mode: str = "MONITOR_ONLY"  # MONITOR_ONLY, AUTO_CONTROL
+    paired_devices: List[Dict[str, Any]] = []
+    consents: List[ConsentCreate] = []
+    notification_preferences: List[NotificationPreferenceCreate] = []
+    purifier_rule: Optional[Dict[str, Any]] = None

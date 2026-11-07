@@ -88,3 +88,4 @@ All three pathways adhere strictly to the non-negotiable data integrity and safe
 2. Direct NDIR CO2 is kept separate from VOC indices.
 3. Network endpoints are screened with strict RFC 1918 SSRF filters and port restrictions.
 4. Failure states trigger immediate suspension of ordinary automated speed changes.
+

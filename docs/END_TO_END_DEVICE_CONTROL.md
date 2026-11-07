@@ -90,3 +90,4 @@ Monitoring devices (such as AirGradient ONE, Awair Element, PurpleAir, and raw s
    - Enforces a minimum 30-second hardware cooldown between successive commands to prevent motor stress and oscillation.
 6. **Audit Trail Persistence:**
    - Every actuation event is recorded to the immutable `audit_logs` table with user ID, target device ID, command parameters, and execution response.
+

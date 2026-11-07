@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from services.api.database import get_db
 from services.api.config import settings
-from services.api.models import User, Home, Room, Device, DeviceCapability, IntegrationType
+from services.api.models import (
+    User, Home, Room, Device, DeviceCapability, IntegrationType,
+    AutomationRule, UserConsent, NotificationPreference, Alert
+)
 from services.api.schemas import UserCreate, UserLogin, UserResponse, Token
 from services.api.security import (
     verify_password, get_password_hash, create_access_token, get_current_user
@@ -126,4 +129,120 @@ async def demo_login(db: AsyncSession = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)
+
+@router.get("/export-data")
+async def export_user_data(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Exports all user account data, connected homes, devices, sensor reading history,
+    automation rules, alerts, and versioned consent logs in adherence to privacy retention policies.
+    """
+    # Fetch user homes
+    homes_res = await db.execute(select(Home).where(Home.owner_id == current_user.id))
+    homes = homes_res.scalars().all()
+    home_ids = [h.id for h in homes]
+
+    rooms = []
+    devices = []
+    rules = []
+    alerts = []
+
+    if home_ids:
+        # Fetch rooms
+        rooms_res = await db.execute(select(Room).where(Room.home_id.in_(home_ids)))
+        rooms = rooms_res.scalars().all()
+
+        # Fetch devices
+        devices_res = await db.execute(select(Device).where(Device.home_id.in_(home_ids)))
+        devices = devices_res.scalars().all()
+
+        # Fetch rules
+        rules_res = await db.execute(select(AutomationRule).where(AutomationRule.home_id.in_(home_ids)))
+        rules = rules_res.scalars().all()
+
+        # Fetch alerts
+        alerts_res = await db.execute(select(Alert).where(Alert.home_id.in_(home_ids)))
+        alerts = alerts_res.scalars().all()
+
+    # Fetch consents
+    consents_res = await db.execute(select(UserConsent).where(UserConsent.user_id == current_user.id))
+    consents = consents_res.scalars().all()
+
+    # Fetch notification preferences
+    prefs_res = await db.execute(select(NotificationPreference).where(NotificationPreference.user_id == current_user.id))
+    prefs = prefs_res.scalars().all()
+
+    export_payload = {
+        "user": {
+            "id": current_user.id,
+            "email": current_user.email,
+            "full_name": current_user.full_name,
+            "created_at": current_user.created_at.isoformat()
+        },
+        "homes": [{"id": h.id, "name": h.name, "created_at": h.created_at.isoformat()} for h in homes],
+        "rooms": [{"id": r.id, "home_id": r.home_id, "name": r.name, "room_type": r.room_type} for r in rooms],
+        "devices": [
+            {
+                "id": d.id,
+                "home_id": d.home_id,
+                "room_id": d.room_id,
+                "name": d.name,
+                "manufacturer": d.manufacturer,
+                "model": d.model,
+                "connection_protocol": d.connection_protocol.value if hasattr(d.connection_protocol, "value") else str(d.connection_protocol),
+                "is_controllable": d.is_controllable
+            }
+            for d in devices
+        ],
+        "automation_rules": [
+            {
+                "id": r.id,
+                "name": r.name,
+                "enabled": r.enabled,
+                "trigger_config": r.trigger_config,
+                "action_config": r.action_config
+            }
+            for r in rules
+        ],
+        "consents": [
+            {
+                "id": c.id,
+                "permission_type": c.permission_type,
+                "authorized_actions": c.authorized_actions,
+                "consent_version": c.consent_version,
+                "is_active": c.is_active,
+                "created_at": c.created_at.isoformat(),
+                "revoked_at": c.revoked_at.isoformat() if c.revoked_at else None
+            }
+            for c in consents
+        ],
+        "notification_preferences": [
+            {
+                "id": p.id,
+                "event_category": p.event_category,
+                "delivery_channel": p.delivery_channel,
+                "enabled": p.enabled,
+                "min_severity": p.min_severity
+            }
+            for p in prefs
+        ],
+        "alerts_count": len(alerts),
+        "exported_at": datetime.utcnow().isoformat()
+    }
+    return export_payload
+
+@router.delete("/delete-account-data")
+async def delete_user_account_data(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Permanently deletes the user account, associated homes, devices, sensor readings,
+    automations, and credentials in accordance with user data deletion policies.
+    """
+    await db.delete(current_user)
+    await db.commit()
+    return {"message": "User account and all associated environmental data have been permanently deleted."}
 

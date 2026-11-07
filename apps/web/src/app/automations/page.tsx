@@ -40,6 +40,7 @@ export default function AutomationsPage() {
   const [assistantPurifier, setAssistantPurifier] = useState("");
   const [assistantPreset, setAssistantPreset] = useState("clean_air_guard");
   const [assistantSuccess, setAssistantSuccess] = useState<string | null>(null);
+  const [automationsPaused, setAutomationsPaused] = useState(false);
 
   // Custom Form fields
   const [ruleName, setRuleName] = useState("");
@@ -58,6 +59,7 @@ export default function AutomationsPage() {
       setHomes(h);
       if (h.length > 0) {
         const homeId = h[0].id;
+        setAutomationsPaused(Boolean(h[0].automations_paused));
         const [r, d, rl, ex, pr] = await Promise.all([
           api.getRooms(homeId),
           api.getDevices(homeId),
@@ -149,6 +151,19 @@ export default function AutomationsPage() {
     loadAutomations();
   };
 
+  const handleTogglePauseAll = async () => {
+    if (!homes.length) return;
+    try {
+      const res = await api.pauseAllAutomations(homes[0].id, !automationsPaused);
+      setAutomationsPaused(res.automations_paused);
+      setAssistantSuccess(res.message);
+      setTimeout(() => setAssistantSuccess(null), 4000);
+      loadAutomations();
+    } catch (e: any) {
+      alert("Failed to toggle global automation pause.");
+    }
+  };
+
   const handleDeleteRule = async (ruleId: string) => {
     if (!confirm("Are you sure you want to delete this automation rule?")) return;
     await api.deleteAutomation(ruleId);
@@ -165,13 +180,26 @@ export default function AutomationsPage() {
             Safe, automated clean-air adjustments with built-in hysteresis and certified alarm overrides.
           </p>
         </div>
-        <button
-          onClick={() => setShowBuilder(!showBuilder)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border text-xs font-bold hover:bg-muted transition-colors shadow-sm self-start md:self-auto"
-        >
-          <Plus className="w-4 h-4 text-primary" />
-          {showBuilder ? "Close Advanced Builder" : "Custom Rule Builder"}
-        </button>
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <button
+            onClick={handleTogglePauseAll}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+              automationsPaused
+                ? "bg-destructive text-destructive-foreground animate-pulse border-destructive"
+                : "bg-card border-border text-foreground hover:bg-destructive/10 hover:text-destructive"
+            }`}
+          >
+            <Power className="w-4 h-4" />
+            {automationsPaused ? "RESUME AUTOMATIONS" : "Pause All Automations"}
+          </button>
+          <button
+            onClick={() => setShowBuilder(!showBuilder)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border text-xs font-bold hover:bg-muted transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4 text-primary" />
+            {showBuilder ? "Close Advanced Builder" : "Custom Rule Builder"}
+          </button>
+        </div>
       </div>
 
       {/* BEGINNER-FRIENDLY AUTOMATION ASSISTANT */}

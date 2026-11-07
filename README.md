@@ -90,7 +90,40 @@ The demo environment immediately seeds:
 
 ## 🔌 Hardware Connectivity & Consumer Onboarding (Phase 7)
 
-AirGuard AI provides a consumer-friendly, zero-configuration device pairing flow that eliminates terminal commands, manual YAML configuration, and raw IP address entry for ordinary home users.
+AirGuard AI provides a consumer-friendly, zero-configuration device pairing and onboarding experience (`/onboarding`) that eliminates terminal commands, manual YAML configuration, and raw IP address entry for ordinary home users.
+
+### 🌟 Dual Operating Modes
+1. **Mode 1: Monitor & Notify (Default / Recommended):**
+   - Connect compatible sensors, display live readings/history/quality, and deliver in-app & push notifications.
+   - Zero automatic device control or fan speed modification.
+   - Read the [Monitor & Notify Specification](docs/MONITOR_NOTIFY_SPEC.md).
+2. **Mode 2: Automatic Purifier Control:**
+   - Includes all monitoring and alerting capabilities.
+   - Explicitly authorized, rule-bound automatic control of verified purifiers.
+   - **Particulate-Only Invariant:** Purifier speed increases are strictly tied to particulate filtration (PM2.5 / PM10); actuation is never triggered by unvalidated odor or VOC spikes.
+   - Read the [Automatic Purifier Control Specification](docs/AUTOMATIC_PURIFIER_CONTROL_SPEC.md).
+
+### 🧭 8-Stage Guided Onboarding Journey (`/onboarding`)
+- **Stage 1 (Welcome & Limits):** Transparent product limits, local-first operation, and life-safety alarm independence.
+- **Stage 2 (Connect Devices):** Brand/model selection across Home Assistant, direct local REST, and AirGradient monitors.
+- **Stage 3 (Verify Connections):** Live socket ping, telemetry freshness check, and actuator response verification.
+- **Stage 4 (Assign Rooms):** Explicit physical mapping of monitors to purifiers in the same room.
+- **Stage 5 (Select Mode):** Clear choice between Monitor & Notify and Automatic Purifier Control.
+- **Stage 6 (Permissions & Consent):** Unbundled, versioned, and revocable consent matrix.
+- **Stage 7 (Test & Dry-Run):** Interactive sensor ping, notification test dispatch, and user-confirmed guarded fan pulse.
+- **Stage 8 (Review & Activation):** Final state persistence and transition to room dashboard.
+- Read the full [Onboarding User Journey Guide](docs/ONBOARDING_USER_JOURNEY.md).
+
+### 🛑 Emergency Global Kill-Switch & 14 Safety Invariants
+- **Global Pause Button:** A persistent "Pause All Automations" kill switch is accessible from the top navigation bar. Clicking it halts all automation evaluations across all rooms instantaneously (`home.automations_paused == True`).
+- **14 Server-Side Invariants:** Enforced via `SafetyEngine.validate_automation_action` (conservative emergency suspension on fire/gas hazard, manual override hold, 120s sensor freshness window, room matching, and particulate-only automation).
+- Read the [Automation Safety Invariants Specification](docs/AUTOMATION_SAFETY_INVARIANTS.md).
+
+### 🔐 Privacy, GDPR & Consent Management
+- **Unbundled Permissions:** Telemetry access, notifications, device control, and AI training data sharing are decoupled and independently revocable.
+- **Revocation Cascade:** Revoking `DEVICE_CONTROL` in `/settings` server-side blocks all future automated actuations.
+- **Data Subject Rights:** Full account JSON export (`GET /api/v1/auth/export-data`) and permanent account data deletion (`DELETE /api/v1/auth/delete-account-data`).
+- Read the [Consent & Permissions Matrix](docs/CONSENT_PERMISSION_MATRIX.md) and [E2E Test Results](docs/ONBOARDING_E2E_RESULTS.md).
 
 ### 🎯 Three Operational Capability Tiers
 AirGuard strictly surfaces device capabilities across three unambiguous tiers:

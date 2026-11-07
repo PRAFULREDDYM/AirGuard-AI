@@ -118,3 +118,4 @@ For households already running Home Assistant OS:
 2. **Windows Authenticode:** Sign MSI installer and executable with an EV Code Signing certificate.
 3. **Local Certificate Authority (mTLS):** Generate a local ephemeral self-signed CA on first boot to secure localhost HTTPS traffic between web UI and gateway without browser security warnings.
 4. **Auto-Updater:** Integrate Sparkle (macOS) and WinSparkle (Windows) for seamless zero-click background security updates.
+
