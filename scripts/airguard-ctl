@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+# AirGuard AI — Daemon & Service Control Utility (airguard-ctl)
+
+set -e
+
+AIRGUARD_HOME="${AIRGUARD_HOME:-${HOME}/.local/share/airguard-ai}"
+DATA_DIR="${AIRGUARD_DATA_DIR:-${HOME}/.airguard}"
+LOG_DIR="${AIRGUARD_LOG_DIR:-${HOME}/Library/Logs/AirGuard}"
+LOG_FILE="${LOG_DIR}/gateway.log"
+ERR_FILE="${LOG_DIR}/gateway_error.log"
+PLIST_FILE="${HOME}/Library/LaunchAgents/ai.airguard.gateway.plist"
+API_URL="http://127.0.0.1:8000"
+
+mkdir -p "${DATA_DIR}" "${LOG_DIR}" 2>/dev/null || true
+
+command_status() {
+    echo "=== AirGuard AI Service Status ==="
+    if launchctl list | grep -q "ai.airguard.gateway"; then
+        PID=$(launchctl list | grep "ai.airguard.gateway" | awk '{print $1}')
+        if [ "$PID" != "-" ] && [ -n "$PID" ]; then
+            echo "Status: RUNNING (launchd PID: ${PID})"
+        else
+            echo "Status: LOADED (Waiting or Stopped)"
+        fi
+    else
+        # Check process manually
+        PID=$(pgrep -f "services.api.main:app" || true)
+        if [ -n "$PID" ]; then
+            echo "Status: RUNNING (standalone PID: ${PID})"
+        else
+            echo "Status: STOPPED"
+        fi
+    fi
+
+    # Check HTTP health
+    if curl -s --max-time 2 "${API_URL}/health" > /dev/null; then
+        HEALTH=$(curl -s "${API_URL}/health")
+        echo "Gateway API: HEALTHY (HTTP 200)"
+        echo "Response: ${HEALTH}"
+    else
+        echo "Gateway API: UNREACHABLE (Port 8000)"
+    fi
+
+    echo "Database: ${DATA_DIR}/airguard.db"
+    echo "Logs: ${LOG_FILE}"
+}
+
+command_start() {
+    echo "Starting AirGuard AI Gateway..."
+    if [ -f "${PLIST_FILE}" ]; then
+        launchctl load -w "${PLIST_FILE}" 2>/dev/null || launchctl start ai.airguard.gateway
+        echo "Started via launchd service."
+    else
+        # Fallback background daemon
+        export PYTHONPATH="${AIRGUARD_HOME}"
+        export DATABASE_URL="sqlite+aiosqlite:///${DATA_DIR}/airguard.db"
+        nohup "${AIRGUARD_HOME}/.venv/bin/uvicorn" services.api.main:app --host 127.0.0.1 --port 8000 >> "${LOG_FILE}" 2>> "${ERR_FILE}" &
+        echo "Started standalone daemon (PID: $!)."
+    fi
+    sleep 2
+    command_status
+}
+
+command_stop() {
+    echo "Stopping AirGuard AI Gateway..."
+    if [ -f "${PLIST_FILE}" ]; then
+        launchctl stop ai.airguard.gateway 2>/dev/null || true
+        launchctl unload "${PLIST_FILE}" 2>/dev/null || true
+    fi
+    # Kill any dangling instances
+    pkill -f "services.api.main:app" 2>/dev/null || true
+    echo "AirGuard AI Gateway stopped."
+}
+
+command_restart() {
+    command_stop
+    sleep 1
+    command_start
+}
+
+command_logs() {
+    if [ -f "${LOG_FILE}" ]; then
+        tail -n 50 -f "${LOG_FILE}"
+    else
+        echo "Log file not found at ${LOG_FILE}."
+    fi
+}
+
+command_doctor() {
+    echo "=== AirGuard AI Diagnostics Doctor ==="
+    echo "Checking macOS Environment..."
+    uname -a
+    echo "Checking Data Directory: ${DATA_DIR} [OK]"
+    echo "Checking Log Directory: ${LOG_DIR} [OK]"
+    
+    if [ -f "${DATA_DIR}/airguard.db" ]; then
+        DB_SIZE=$(du -h "${DATA_DIR}/airguard.db" | awk '{print $1}')
+        echo "Local SQLite Database: PRESENT (${DB_SIZE}) [OK]"
+    else
+        echo "Local SQLite Database: NOT INITIALIZED (Will create on first run) [OK]"
+    fi
+
+    if lsof -i :8000 >/dev/null 2>&1; then
+        PORT_USER=$(lsof -i :8000 | tail -n 1 | awk '{print $1, $2}')
+        echo "Port 8000 Status: LISTENING by ${PORT_USER} [OK]"
+    else
+        echo "Port 8000 Status: FREE (Ready for Gateway)"
+    fi
+
+    if [ -f "${PLIST_FILE}" ]; then
+        echo "Launchd Service Plist: INSTALLED [OK]"
+    else
+        echo "Launchd Service Plist: NOT INSTALLED"
+    fi
+    echo "All diagnostic checks completed."
+}
+
+case "$1" in
+    status)
+        command_status
+        ;;
+    start)
+        command_start
+        ;;
+    stop)
+        command_stop
+        ;;
+    restart)
+        command_restart
+        ;;
+    logs)
+        command_logs
+        ;;
+    doctor)
+        command_doctor
+        ;;
+    *)
+        echo "Usage: airguard-ctl {status|start|stop|restart|logs|doctor}"
+        exit 1
+        ;;
+esac

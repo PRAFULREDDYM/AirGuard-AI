@@ -170,8 +170,31 @@ class AlertResponse(BaseModel):
     category: str = "ELEVATED_READING"
     delivery_channel: str = "IN_APP"
     delivery_status: str = "DELIVERED"
+    delivery_attempts: int = 1
+    failure_reason: Optional[str] = None
+    acknowledged_at: Optional[datetime] = None
     is_read: bool
     read_at: Optional[datetime] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class AlertAckResponse(BaseModel):
+    alert_id: str
+    delivery_status: str
+    acknowledged_at: datetime
+    message: str
+
+class PushSubscriptionCreate(BaseModel):
+    endpoint: str
+    p256dh_key: str
+    auth_key: str
+    user_agent: Optional[str] = None
+
+class PushSubscriptionResponse(BaseModel):
+    id: str
+    user_id: str
+    endpoint: str
+    is_active: bool
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 

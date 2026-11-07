@@ -161,3 +161,4 @@ async def test_onboarding_8_stage_wizard_e2e():
         print("Verified global Pause All Automations kill switch in top navigation.")
 
         await browser.close()
+

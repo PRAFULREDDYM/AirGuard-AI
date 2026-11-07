@@ -114,3 +114,4 @@ The AirGuard AI onboarding flow (`/onboarding`) guides consumers through an 8-st
 ## State Persistence & Navigation Flow
 - Users can step back to previous stages without losing entered credentials.
 - In-flight states are held in local state and validated server-side on stage submission.
+

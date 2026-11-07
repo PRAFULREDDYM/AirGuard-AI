@@ -47,3 +47,4 @@ When a user revokes `DEVICE_CONTROL` from `/settings` or during onboarding:
 
 - **Right of Access / Portability**: `GET /api/v1/auth/export-data` exports an exhaustive JSON archive containing user profile, homes, rooms, devices, rules, consents, and notification settings.
 - **Right to Erasure**: `DELETE /api/v1/auth/delete-account-data` executes a permanent cascade deletion of all user records, sensor readings, and credentials.
+

@@ -152,6 +152,70 @@ class AutomationEngine:
                 continue
 
             # Execute device command
+            # ATOMIC PRE-DISPATCH RECHECK (Prevents race conditions from queued / async execution)
+            fresh_home_res = await db.execute(select(Home).where(Home.id == source_device.home_id))
+            fresh_home = fresh_home_res.scalars().first()
+            if fresh_home and getattr(fresh_home, "automations_paused", False):
+                exec_record = AutomationExecution(
+                    rule_id=rule.id,
+                    device_id=target_device.id,
+                    command=command,
+                    parameters=params,
+                    status="BLOCKED_BY_SAFETY",
+                    reason="RACE CONDITION PREVENTED: Automations were paused immediately prior to command dispatch."
+                )
+                db.add(exec_record)
+                executions.append(exec_record)
+                continue
+
+            fresh_consent_res = await db.execute(
+                select(UserConsent).where(
+                    UserConsent.user_id == fresh_home.owner_id if fresh_home else "",
+                    UserConsent.permission_type == "DEVICE_CONTROL"
+                )
+            )
+            all_user_consents = fresh_consent_res.scalars().all()
+            if all_user_consents and not any(c.is_active for c in all_user_consents):
+                exec_record = AutomationExecution(
+                    rule_id=rule.id,
+                    device_id=target_device.id,
+                    command=command,
+                    parameters=params,
+                    status="BLOCKED_BY_SAFETY",
+                    reason="RACE CONDITION PREVENTED: DEVICE_CONTROL consent was revoked immediately prior to command dispatch."
+                )
+                db.add(exec_record)
+                executions.append(exec_record)
+                continue
+
+            fresh_dev_res = await db.execute(select(Device).where(Device.id == target_device.id))
+            fresh_dev = fresh_dev_res.scalars().first()
+            if not fresh_dev or not fresh_dev.automation_authorized:
+                exec_record = AutomationExecution(
+                    rule_id=rule.id,
+                    device_id=target_device.id,
+                    command=command,
+                    parameters=params,
+                    status="BLOCKED_BY_SAFETY",
+                    reason="RACE CONDITION PREVENTED: Target device authorization was revoked immediately prior to command dispatch."
+                )
+                db.add(exec_record)
+                executions.append(exec_record)
+                continue
+
+            if fresh_dev.manual_override:
+                exec_record = AutomationExecution(
+                    rule_id=rule.id,
+                    device_id=target_device.id,
+                    command=command,
+                    parameters=params,
+                    status="BLOCKED_BY_SAFETY",
+                    reason="RACE CONDITION PREVENTED: Manual override active on target device immediately prior to command dispatch."
+                )
+                db.add(exec_record)
+                executions.append(exec_record)
+                continue
+
             exec_status = "SUCCESS"
             exec_reason = f"Rule '{rule.name}' triggered on {m_type}={reading.value} {reading.unit}."
             

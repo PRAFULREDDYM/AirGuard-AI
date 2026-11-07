@@ -87,3 +87,4 @@ When a user manually modifies the purifier fan speed (either on physical hardwar
 1. `manual_override` is set to `True`.
 2. `manual_override_until` is set to $t + 60\text{ minutes}$.
 3. The automation engine will **never** override the user's manual setting until the override expires or the user explicitly taps "Resume Automation".
+

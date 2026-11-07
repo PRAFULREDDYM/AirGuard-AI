@@ -88,7 +88,51 @@ The demo environment immediately seeds:
 
 ---
 
-## 🔌 Hardware Connectivity & Consumer Onboarding (Phase 7)
+## 📦 Consumer Beta Installation & Packaging (Phase 8)
+
+AirGuard AI provides a zero-terminal, consumer-friendly macOS Beta installer. Ordinary users do not need to manage virtual environments, Python paths, Docker containers, or terminal windows.
+
+```bash
+# 1. Run the standalone macOS installer:
+./scripts/install_macos.sh
+
+# 2. Control & inspect background services:
+airguard-ctl doctor     # Runs full pre-flight health & port diagnostics
+airguard-ctl status     # Shows launchd daemon PID, API status, and database info
+airguard-ctl logs       # Streams live background service logs
+airguard-ctl restart    # Gracefully restarts local gateway
+
+# 3. Clean uninstallation:
+./scripts/uninstall_macos.sh
+# To uninstall and purge all data:
+./scripts/uninstall_macos.sh --purge-data
+```
+
+### 📋 Phase 8 Readiness & Verification Matrix
+
+For complete transparency, every hardware pathway and platform subsystem is evaluated against rigorous validation tiers:
+
+| Subsystem / Feature | Implementation Status | Verification Level | Notes |
+| :--- | :--- | :--- | :--- |
+| **macOS Beta Installer & launchd Agent** | Implemented | **Physically Verified** | User-space launchd agent, sleep/wake resilience, desktop launcher |
+| **Atomic Pre-Dispatch Safety Recheck** | Implemented | **Physically Verified** | Blocks commands if consent revoked or pause toggled during evaluation |
+| **Home Assistant Integration** | Implemented | **Provider-Tested** | Tested against official HA REST/WS API contracts & mock server |
+| **AirGradient Local API (`/measures/current`)**| Implemented | **Provider-Tested** | Tested against official v1 local endpoint schema |
+| **SafePurifier HEPA (Simulation)** | Implemented | **Physically Verified** | Full software closed-loop physics emulation |
+| **Direct Device Adapter (miIO/REST)** | Implemented | **Mock-Tested** | Tested with simulated local protocol payloads |
+| **Dyson / Tuya / Cloud-Only Purifiers** | Flagged / Guidance | **Blocked** | Cloud-dependent or proprietary tokens; bridged via HA |
+| **In-App Notification Center** | Implemented | **Physically Verified** | Read tracking, quiet hours suppression, cooldown deduplication |
+| **Web Push API Subscriptions & Delivery ACK** | Implemented | **Physically Verified** | Endpoints store keys; ACK transitions status to DELIVERED |
+| **Device-Offline Health Scanner** | Implemented | **Physically Verified** | Detects stale telemetry (>300s) and deduplicates offline alerts |
+| **Alembic Database Migrations (`c8f1e31d45ab`)** | Implemented | **Physically Verified** | Zero-loss schema upgrades tested on populated databases |
+| **SSRF & Network Gateway Protection** | Implemented | **Physically Verified** | Blocks cloud metadata (`169.254.169.254`) and non-IoT ports |
+| **Production Mock & Demo Isolation** | Implemented | **Physically Verified** | Rejects demo login and unmounts mock routes in production |
+| **Environmental Sensor Odor Classifier** | Research Prototype | **51.62% Acc (Holdout)** | **NOT reliable for household odor identification**; fan control prohibited |
+| **Molecular Odor Prediction (OpenPOM)** | Implemented | **Provider-Tested** | Accepts SMILES only; strictly decoupled from sensor streams |
+
+---
+
+## 🔌 Hardware Connectivity & Consumer Onboarding (Phase 7 & 8)
 
 AirGuard AI provides a consumer-friendly, zero-configuration device pairing and onboarding experience (`/onboarding`) that eliminates terminal commands, manual YAML configuration, and raw IP address entry for ordinary home users.
 

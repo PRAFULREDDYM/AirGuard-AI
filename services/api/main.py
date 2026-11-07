@@ -99,7 +99,8 @@ app.include_router(gateway.router, prefix=v1)
 app.include_router(catalog.router, prefix=v1)
 app.include_router(consents.router, prefix=v1)
 app.include_router(notifications.router, prefix=v1)
-app.include_router(mock_router)
+if settings.ENABLE_MOCK_PROVIDERS and not settings.is_production:
+    app.include_router(mock_router)
 app.include_router(websocket.router)
 
 @app.get("/health")

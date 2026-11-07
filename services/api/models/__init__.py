@@ -72,6 +72,7 @@ class User(Base):
     audit_logs = relationship("AuditLog", back_populates="user")
     consents = relationship("UserConsent", back_populates="user", cascade="all, delete-orphan")
     notification_preferences = relationship("NotificationPreference", back_populates="user", cascade="all, delete-orphan")
+    push_subscriptions = relationship("PushSubscription", back_populates="user", cascade="all, delete-orphan")
 
 class Home(Base):
     __tablename__ = "homes"
@@ -208,7 +209,10 @@ class Alert(Base):
     message = Column(Text, nullable=False)
     category = Column(String(50), default="ELEVATED_READING")  # ELEVATED_READING, OFFLINE_SENSOR, GATEWAY_DISCONNECTED, DEVICE_ERROR, ODOR_CLASSIFIED, CERTIFIED_ALARM
     delivery_channel = Column(String(50), default="IN_APP")     # IN_APP, PUSH_NOTIFICATION, EMAIL
-    delivery_status = Column(String(50), default="DELIVERED")   # DELIVERED, PENDING, SUPPRESSED_QUIET_HOURS, SUPPRESSED_COOLDOWN
+    delivery_status = Column(String(50), default="DELIVERED")   # DELIVERED, PENDING, SUPPRESSED_QUIET_HOURS, SUPPRESSED_COOLDOWN, PENDING_CLIENT_CONFIRMATION, FAILED
+    delivery_attempts = Column(Integer, default=1)
+    failure_reason = Column(Text, nullable=True)
+    acknowledged_at = Column(DateTime, nullable=True)
     is_read = Column(Boolean, default=False)
     read_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -338,3 +342,17 @@ class NotificationPreference(Base):
 
     user = relationship("User", back_populates="notification_preferences")
     home = relationship("Home", back_populates="notification_preferences")
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    endpoint = Column(Text, nullable=False, unique=True)
+    p256dh_key = Column(String(255), nullable=False)
+    auth_key = Column(String(255), nullable=False)
+    user_agent = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="push_subscriptions")

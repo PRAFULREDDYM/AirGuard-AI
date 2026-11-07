@@ -65,7 +65,7 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
 @router.post("/demo-login", response_model=Token)
 async def demo_login(db: AsyncSession = Depends(get_db)):
     """Creates or logs into a seeded demo account for immediate testing."""
-    if settings.ENVIRONMENT.lower() == "production":
+    if settings.is_production or not settings.ENABLE_MOCK_PROVIDERS:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Demo auto-login is disabled in production environments."

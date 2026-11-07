@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
+    ENABLE_MOCK_PROVIDERS: bool = True
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.lower() == "production"
     
     # Database: Default to sqlite+aiosqlite for local/sandboxed zero-friction execution
     # and support postgresql+asyncpg://user:pass@host:port/dbname for production

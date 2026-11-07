@@ -97,6 +97,21 @@ export default function OnboardingPage() {
 
   // Load initial homes, rooms, and catalog
   useEffect(() => {
+    try {
+      const savedStage = localStorage.getItem("airguard_onboarding_stage");
+      if (savedStage) {
+        const s = parseInt(savedStage, 10);
+        if (s >= 1 && s <= 8) setStage(s);
+      }
+      const savedMode = localStorage.getItem("airguard_onboarding_mode");
+      if (savedMode === "MONITOR_ONLY" || savedMode === "AUTO_CONTROL") {
+        setOperatingMode(savedMode as OperatingMode);
+        if (savedMode === "AUTO_CONTROL") setConsentPurifierControl(true);
+      }
+    } catch (e) {
+      // localStorage sandbox safety
+    }
+
     async function init() {
       try {
         const h = await api.getHomes();
@@ -318,6 +333,12 @@ export default function OnboardingPage() {
           consent_origin: "onboarding_wizard"
         });
       }
+
+      // Clear stored onboarding state upon successful activation
+      try {
+        localStorage.removeItem("airguard_onboarding_stage");
+        localStorage.removeItem("airguard_onboarding_mode");
+      } catch (e) {}
 
       // Redirect to room dashboard
       router.push(selectedRoomId ? `/rooms/${selectedRoomId}` : "/");
@@ -833,15 +854,15 @@ export default function OnboardingPage() {
                   Explicit Authorization Required
                 </span>
               </div>
-              <h3 className="text-base font-bold text-foreground">2. Automatic Purifier Control</h3>
+              <h3 className="text-base font-bold text-foreground">2. Monitor, Notify & Automatically Control Purifier</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Includes all monitoring and notifications, plus authorized automatic speed adjustments on compatible air purifiers when PM2.5 levels rise.
+                Includes all monitoring and notifications, plus explicitly authorized, rule-bound automatic speed adjustments on compatible purifiers when PM2.5 levels rise.
               </p>
               <ul className="text-xs text-muted-foreground space-y-1 pt-2">
-                <li>• All Monitor & Notify features</li>
-                <li>• Automated PM2.5 clean air guard regulation</li>
-                <li>• 14 safety invariants & physical button override hold</li>
-                <li>• Emergency suspension on fire or combustible gas</li>
+                <li>• <strong>Authorized Actions:</strong> Set fan speeds (Low/Med/High) strictly for fine particle (PM2.5) filtration</li>
+                <li>• <strong>Particulate-Only Invariant:</strong> Never actuates from unvalidated odor or VOC spikes</li>
+                <li>• <strong>Emergency Suspension:</strong> Zero fan actuation during fire or gas leaks (prevents spark/oxygen acceleration)</li>
+                <li>• <strong>Manual Override Hold:</strong> Physical button presses lock automations for 60 minutes</li>
               </ul>
             </div>
           </div>
@@ -1180,3 +1201,4 @@ export default function OnboardingPage() {
     </div>
   );
 }
+

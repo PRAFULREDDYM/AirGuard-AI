@@ -184,3 +184,4 @@ async def get_consent_status_summary(
         "total_active": len(active_consents),
         "timestamp": datetime.utcnow().isoformat()
     }
+

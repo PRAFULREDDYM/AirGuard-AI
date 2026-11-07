@@ -324,6 +324,18 @@ export default function ModelLabPage() {
       {/* TAB 2: Electronic-Nose System */}
       {activeTab === "enose" && (
         <div className="space-y-6">
+          {/* Scientific Honesty & Validation Notice */}
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <div>
+              <strong className="font-semibold block mb-1">Scientific Honesty Notice — Research Prototype Limitations:</strong>
+              Under rigorous chronological holdouts across independent measurement sessions, electronic-nose odor classification models achieve <strong>~51.62% balanced accuracy</strong>.
+              This model is an experimental research tool and <strong>is NOT reliable for automated household odor identification</strong>.
+              Automated purifier actuation is strictly prohibited on odor predictions and is limited exclusively to physical particulate matter (PM2.5 / PM10).
+              Requires dedicated 10-step heated MOX resistance arrays (e.g., Bosch BME688); standard optical PM2.5 or basic TVOC sensors cannot execute this pipeline.
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl bg-card border border-border">
               <span className="text-[11px] text-muted-foreground uppercase tracking-wider block font-semibold">Hardware Sensor Technology</span>

@@ -43,3 +43,4 @@
 - `PATCH /api/v1/notifications/{id}/read`: Marks a single notification as read.
 - `POST /api/v1/notifications/mark-all-read`: Marks all pending notifications as read.
 - `POST /api/v1/notifications/test`: Dispatches a simulated test alert to verify notification delivery.
+
