@@ -14,10 +14,6 @@
 [![Playwright](https://img.shields.io/badge/Playwright-E2E%20Verified-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-<br/>
-
-<img src="docs/assets/hero-demo.gif" alt="AirGuard AI Interactive Walkthrough" width="850" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);" />
-
 </div>
 
 ---
@@ -163,15 +159,6 @@ flowchart TD
 ### Automations & Emergency Kill Switch
 *Active invariant policy monitoring, rate-limiting rules, and global one-click automation pause.*
 <img src="docs/assets/automations.gif" alt="Automations & Safety Controls" width="850" style="border-radius: 8px; border: 1px solid #1e293b;" />
-
-<br/><br/>
-
-### Exposure Analytics & Mobile Viewport
-*Longitudinal particulate exposure metrics and responsive mobile interface for on-the-go monitoring.*
-<p align="center">
-  <img src="docs/assets/analytics.png" alt="Analytics Dashboard" width="55%" style="border-radius: 8px; border: 1px solid #1e293b; margin-right: 2%;" />
-  <img src="docs/assets/mobile.png" alt="Mobile View" width="35%" style="border-radius: 8px; border: 1px solid #1e293b;" />
-</p>
 
 </div>
 
