@@ -24,8 +24,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r services/api/requirements.txt
-          pip install -r services/ml_molecular/requirements.txt
-          pip install -r services/ml_environment/requirements.txt
           pip install amqtt pytest-asyncio pytest-cov httpx
 
       - name: Run Alembic schema migrations (SQLite test)
