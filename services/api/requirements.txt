@@ -14,6 +14,7 @@ greenlet>=3.0.3
 # Security & Auth
 PyJWT>=2.8.0
 bcrypt>=4.1.2
+cryptography>=42.0.0
 python-multipart>=0.0.9
 
 # Networking & Integrations
@@ -23,10 +24,11 @@ paho-mqtt>=2.0.0
 aiofiles>=23.2.1
 zeroconf>=0.150.0
 
-# Environmental ML
+# Environmental & Molecular ML
 scikit-learn>=1.4.0
 scipy>=1.12.0
 numpy>=1.26.0
+rdkit>=2023.9.5
 
 # Testing
 pytest>=8.1.0

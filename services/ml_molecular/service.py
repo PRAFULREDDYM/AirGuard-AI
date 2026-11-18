@@ -4,9 +4,16 @@ import joblib
 import numpy as np
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
-from rdkit import Chem
-from rdkit.Chem import Descriptors
-from rdkit.Chem import rdFingerprintGenerator
+try:
+    from rdkit import Chem
+    from rdkit.Chem import Descriptors
+    from rdkit.Chem import rdFingerprintGenerator
+    RDKIT_AVAILABLE = True
+except ImportError:
+    Chem = None
+    Descriptors = None
+    rdFingerprintGenerator = None
+    RDKIT_AVAILABLE = False
 
 CANONICAL_ODOR_DESCRIPTORS = [
     "alcoholic", "aldehydic", "alliaceous", "almond", "amber", "animal", "anisic", "apple", "apricot",
@@ -75,6 +82,8 @@ class MolecularOdorPipeline:
         smiles = smiles.strip()
         if not smiles:
             return False, "SMILES string is empty."
+        if not RDKIT_AVAILABLE or Chem is None:
+            return False, "RDKit is not installed in the execution environment."
         try:
             mol = Chem.MolFromSmiles(smiles)
             if mol is None:
@@ -85,6 +94,8 @@ class MolecularOdorPipeline:
             return False, f"Molecular parsing error: {str(e)}"
 
     def featurize_smiles(self, smiles: str) -> np.ndarray:
+        if not RDKIT_AVAILABLE or Chem is None:
+            return np.zeros(1024, dtype=np.int8)
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return np.zeros(1024, dtype=np.int8)
