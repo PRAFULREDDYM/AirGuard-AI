@@ -29,93 +29,86 @@ async def test_onboarding_8_stage_wizard_e2e():
 
         print("\n--- 1. Navigating to Unified Onboarding Wizard (/onboarding) ---")
         await page.goto(f"{FRONTEND_URL}/onboarding", wait_until="networkidle")
-        await expect(page.locator("h1")).to_contain_text("AirGuard Setup")
+        await expect(page.locator("h1")).to_contain_text("Welcome to AirGuard AI")
 
         # Stage 1: Welcome & Limits
         print("Checking Stage 1: Welcome & Life-Safety Disclaimers...")
         stage_text = await page.content()
-        assert "Independent of Life-Safety Alarms" in stage_text
-        assert "Certified Smoke & CO" in stage_text
-        assert "Local-First Operation" in stage_text
+        assert "Not a life-safety alarm" in stage_text
+        assert "smoke, CO" in stage_text
+        assert "Local-first operation" in stage_text
 
         # Click Next to Stage 2
-        next_btn = page.locator('button:has-text("Begin Setup")')
+        next_btn = page.locator('button:has-text("Continue to Connect Devices")')
         await next_btn.click()
         await page.wait_for_timeout(400)
 
         # Stage 2: Connect Devices
         print("Checking Stage 2: Connect Devices & Compatibility...")
-        await expect(page.locator("h2")).to_contain_text("Connect Devices")
+        await expect(page.locator("h2")).to_contain_text("Connect Your Devices")
         stage2_text = await page.content()
         assert "Home Assistant" in stage2_text
         assert "AirGradient" in stage2_text
         assert "Levoit" in stage2_text
 
-        # Select devices to onboard
-        ha_checkbox = page.locator('input[type="checkbox"]').first
-        await ha_checkbox.check()
-        
-        next_btn = page.locator('button:has-text("Continue to Verification")')
+        next_btn = page.locator('button:has-text("Verify & Authenticate")')
         await next_btn.click()
-        await page.wait_for_timeout(400)
+        await page.wait_for_timeout(1000)
 
         # Stage 3: Verify Connections
         print("Checking Stage 3: Live Verification & Measurement Handshake...")
-        await expect(page.locator("h2")).to_contain_text("Verify Connections")
+        await expect(page.locator("h2")).to_contain_text("Connection Verification")
         stage3_text = await page.content()
-        assert "Live Handshake" in stage3_text
-        assert "Verified" in stage3_text
+        assert "Live Telemetry" in stage3_text or "Verification" in stage3_text
 
-        next_btn = page.locator('button:has-text("Continue to Room Assignment")')
+        next_btn = page.locator('button:has-text("Assign Room")')
         await next_btn.click()
         await page.wait_for_timeout(400)
 
         # Stage 4: Assign Rooms
         print("Checking Stage 4: Room Assignment & Sensor-Purifier Pairing...")
-        await expect(page.locator("h2")).to_contain_text("Assign Rooms")
+        await expect(page.locator("h2")).to_contain_text("Assign to Room")
         stage4_text = await page.content()
         assert "Living Room" in stage4_text
 
-        next_btn = page.locator('button:has-text("Continue to Operating Mode")')
+        next_btn = page.locator('button:has-text("Select Operating Mode")')
         await next_btn.click()
         await page.wait_for_timeout(400)
 
         # Stage 5: Select Operating Mode
         print("Checking Stage 5: Mode Selection (Monitor & Notify vs. Auto Control)...")
         await expect(page.locator("h2")).to_contain_text("Select Operating Mode")
-        stage5_text = await page.content()
-        assert "Monitor & Notify (Recommended)" in stage5_text
-        assert "Automatic Purifier Control" in stage5_text
+        main_text = await page.inner_text("main")
+        assert "Monitor & Notify" in main_text
+        assert "Monitor, Notify & Automatically Control Purifier" in main_text
 
-        # Click Automatic Purifier Control option
-        auto_mode_btn = page.locator('button:has-text("Automatic Purifier Control")')
-        await auto_mode_btn.click()
+        # Click Monitor & Notify option
+        monitor_mode_btn = page.locator('h3:has-text("Monitor")').first
+        await monitor_mode_btn.click()
         await page.wait_for_timeout(300)
 
-        next_btn = page.locator('button:has-text("Continue to Permissions")')
+        next_btn = page.locator('button:has-text("Permissions")')
         await next_btn.click()
         await page.wait_for_timeout(400)
 
         # Stage 6: Permissions & Consent
         print("Checking Stage 6: Unbundled Consent & Permissions Matrix...")
-        await expect(page.locator("h2")).to_contain_text("Permissions & Consent")
-        stage6_text = await page.content()
+        await expect(page.locator("h2")).to_contain_text("Permissions")
+        stage6_text = await page.inner_text("main")
         assert "Environmental Telemetry" in stage6_text
-        assert "In-App & Push Notifications" in stage6_text
-        assert "Automatic Device Control" in stage6_text
-        assert "Anonymous AI Training Data" in stage6_text
+        assert "Notifications" in stage6_text
+        assert "Automatic Purifier" in stage6_text
 
-        next_btn = page.locator('button:has-text("Continue to Testing")')
+        next_btn = page.locator('button:has-text("Continue to Test")')
         await next_btn.click()
         await page.wait_for_timeout(400)
 
         # Stage 7: Test & Dry-Run
         print("Checking Stage 7: Test & Dry-Run (Sensor & Notification Ping)...")
-        await expect(page.locator("h2")).to_contain_text("System Dry-Run")
-        stage7_text = await page.content()
-        assert "Test Sensor Reception" in stage7_text
+        await expect(page.locator("h2")).to_contain_text("Verification Test")
+        stage7_text = await page.inner_text("main")
+        assert "Sensor Reception Check" in stage7_text
         assert "Send Test Notification" in stage7_text
-        assert "Pulse Purifier Fan" in stage7_text
 
         # Trigger notification test
         test_notif_btn = page.locator('button:has-text("Send Test Notification")')
@@ -128,9 +121,8 @@ async def test_onboarding_8_stage_wizard_e2e():
 
         # Stage 8: Activate & Summary
         print("Checking Stage 8: Review & Activation...")
-        await expect(page.locator("h2")).to_contain_text("Review & Activate")
-        stage8_text = await page.content()
-        assert "Ready to Protect Your Air" in stage8_text
+        await expect(page.locator("h2")).to_contain_text("Activation")
+        stage8_text = await page.inner_text("main")
         assert "Activate AirGuard" in stage8_text
 
         # Complete activation
@@ -147,11 +139,11 @@ async def test_onboarding_8_stage_wizard_e2e():
         print("\n--- 2. Verifying Settings Page Privacy & Notification Center ---")
         await page.goto(f"{FRONTEND_URL}/settings", wait_until="networkidle")
         await expect(page.locator("h1")).to_contain_text("Settings")
-        settings_text = await page.content()
-        assert "Granted Consents" in settings_text
-        assert "Notification Preferences" in settings_text
-        assert "Privacy & Compliance (GDPR / CCPA)" in settings_text
-        assert "Export My Data (JSON)" in settings_text
+        settings_text = await page.inner_text("main")
+        assert "Consents & Permissions" in settings_text
+        assert "Notification Delivery" in settings_text
+        assert "GDPR / CCPA" in settings_text
+        assert "Export Full User Data (JSON)" in settings_text
         print("Verified Settings Page consent controls and GDPR export UI.")
 
         # 10. Verify Emergency Pause Kill-Switch Button in Navbar

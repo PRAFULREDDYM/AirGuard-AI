@@ -41,14 +41,15 @@ export default function SettingsPage() {
         api.getConsents()
       ]);
       setUser(u);
-      setHomes(h);
-      setConsents(c);
+      setHomes(Array.isArray(h) ? h : []);
+      setConsents(Array.isArray(c) ? c : []);
 
-      if (h.length > 0) {
+      if (Array.isArray(h) && h.length > 0) {
         const prefs = await api.getNotificationPreferences(h[0].id);
-        setNotificationPrefs(prefs);
-        if (prefs.length > 0) {
-          setQuietHoursEnabled(Boolean(prefs[0].quiet_hours_enabled));
+        const safePrefs = Array.isArray(prefs) ? prefs : [];
+        setNotificationPrefs(safePrefs);
+        if (safePrefs.length > 0) {
+          setQuietHoursEnabled(Boolean(safePrefs[0].quiet_hours_enabled));
         }
       }
     } catch (e) {
@@ -185,7 +186,7 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {consents.length === 0 ? (
+        {!Array.isArray(consents) || consents.length === 0 ? (
           <div className="p-6 text-center rounded-xl bg-muted/20 border border-border text-xs text-muted-foreground">
             No consent records granted yet. Run the Onboarding Wizard to configure device permissions.
           </div>

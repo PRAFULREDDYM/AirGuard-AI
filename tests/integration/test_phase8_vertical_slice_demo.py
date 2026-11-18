@@ -222,3 +222,4 @@ async def test_complete_19_step_vertical_slice_journey():
 
         # Dispatches must remain strictly zero
         assert len(dispatched_cmds_revoked) == 0
+

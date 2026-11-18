@@ -1,0 +1,241 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="100%" height="100%" style="background:#090d16; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="grad-ingest" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0369a1" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="grad-core" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="grad-db" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#d97706" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="grad-ml" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="grad-safety" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="grad-ui" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.08"/>
+    </linearGradient>
+    <!-- Glow Filters -->
+    <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Grid Effect -->
+  <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#1e293b" stroke-width="0.5" stroke-opacity="0.4"/>
+  </pattern>
+  <rect width="1200" height="750" fill="url(#grid)" />
+
+  <!-- Header Title -->
+  <text x="60" y="55" fill="#f8fafc" font-size="24" font-weight="800" letter-spacing="-0.5">AirGuard AI — System Architecture &amp; Data Pipeline</text>
+  <text x="60" y="80" fill="#94a3b8" font-size="13" font-weight="400">Decoupled Molecular &amp; Sensor ML Pipelines, 14-Invariant Safety Engine, and Multi-Protocol Consumer IoT Gateway</text>
+
+  <!-- ==================== 1. INGESTION & IOT GATEWAY ==================== -->
+  <g transform="translate(60, 110)">
+    <rect width="250" height="420" rx="16" fill="url(#grad-ingest)" stroke="#0284c7" stroke-width="1.5" stroke-opacity="0.6"/>
+    <rect x="16" y="16" width="32" height="32" rx="8" fill="#0284c7" fill-opacity="0.2"/>
+    <text x="26" y="38" fill="#38bdf8" font-size="16" font-weight="700">1</text>
+    <text x="60" y="34" fill="#f1f5f9" font-size="15" font-weight="700">IoT Ingestion Layer</text>
+    <text x="60" y="49" fill="#38bdf8" font-size="11" font-weight="600">Unified Adapter Interface</text>
+
+    <!-- Source Items -->
+    <g transform="translate(16, 75)">
+      <!-- Home Assistant -->
+      <rect width="218" height="52" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="24" fill="#e2e8f0" font-size="12" font-weight="600">Home Assistant Adapter</text>
+      <text x="14" y="40" fill="#64748b" font-size="10">Long-Lived Access Token REST / WS</text>
+      
+      <!-- AirGradient -->
+      <rect y="64" width="218" height="52" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="88" fill="#e2e8f0" font-size="12" font-weight="600">AirGradient Local / Cloud</text>
+      <text x="14" y="104" fill="#64748b" font-size="10">Direct JSON HTTP &amp; Token Auth</text>
+
+      <!-- MQTT Broker -->
+      <rect y="128" width="218" height="52" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="152" fill="#e2e8f0" font-size="12" font-weight="600">MQTT Broker (Mosquitto)</text>
+      <text x="14" y="168" fill="#64748b" font-size="10">Telemetry Ingestion &amp; Discovery</text>
+
+      <!-- ESPHome / REST -->
+      <rect y="192" width="218" height="52" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="216" fill="#e2e8f0" font-size="12" font-weight="600">ESPHome &amp; REST Sensors</text>
+      <text x="14" y="232" fill="#64748b" font-size="10">Native API &amp; Webhook Endpoints</text>
+
+      <!-- Simulation Engine -->
+      <rect y="256" width="218" height="52" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="14" y="280" fill="#94a3b8" font-size="12" font-weight="600">Synthetic Scenario Engine</text>
+      <text x="14" y="296" fill="#64748b" font-size="10">Cooking (PM2.5) &amp; Cleaning (VOC)</text>
+    </g>
+  </g>
+
+  <!-- ==================== 2. FASTAPI CORE & GATEWAY ==================== -->
+  <g transform="translate(340, 110)">
+    <rect width="280" height="420" rx="16" fill="url(#grad-core)" stroke="#6366f1" stroke-width="1.5" stroke-opacity="0.6"/>
+    <rect x="16" y="16" width="32" height="32" rx="8" fill="#6366f1" fill-opacity="0.2"/>
+    <text x="26" y="38" fill="#a5b4fc" font-size="16" font-weight="700">2</text>
+    <text x="60" y="34" fill="#f1f5f9" font-size="15" font-weight="700">FastAPI Application Core</text>
+    <text x="60" y="49" fill="#a5b4fc" font-size="11" font-weight="600">Python 3.11 / Async Gateway</text>
+
+    <g transform="translate(16, 75)">
+      <!-- Data Normalizer & Provenance -->
+      <rect width="248" height="64" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="24" fill="#e2e8f0" font-size="12" font-weight="600">Telemetry Provenance &amp; Units</text>
+      <text x="14" y="42" fill="#94a3b8" font-size="10">Raw vs Derived (eCO2 ≠ NDIR CO2)</text>
+      <text x="14" y="55" fill="#64748b" font-size="9">Stale Sensor &amp; Warmup Period Filter</text>
+
+      <!-- Security & Permissions -->
+      <rect y="76" width="248" height="64" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="100" fill="#e2e8f0" font-size="12" font-weight="600">Consent &amp; Security Layer</text>
+      <text x="14" y="118" fill="#94a3b8" font-size="10">Unbundled GDPR/CCPA Versioned Consent</text>
+      <text x="14" y="131" fill="#64748b" font-size="9">SSRF Guard &amp; Production Mode Enforcement</text>
+
+      <!-- REST & WebSockets -->
+      <rect y="152" width="248" height="64" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="176" fill="#e2e8f0" font-size="12" font-weight="600">Async Endpoints &amp; WS</text>
+      <text x="14" y="194" fill="#94a3b8" font-size="10">Rooms, Devices, Alerts, Analytics API</text>
+      <text x="14" y="207" fill="#64748b" font-size="9">Real-time Push Notifications &amp; SSE</text>
+
+      <!-- Local DB Connection Pool -->
+      <rect y="228" width="248" height="80" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1" stroke-opacity="0.4"/>
+      <text x="14" y="252" fill="#fbbf24" font-size="12" font-weight="600">PostgreSQL 16 / SQLite</text>
+      <text x="14" y="270" fill="#94a3b8" font-size="10">SQLAlchemy 2.0 Async + Alembic</text>
+      <text x="14" y="286" fill="#64748b" font-size="9">Time-Series Readings, Audit Trail &amp; Rules</text>
+      <text x="14" y="299" fill="#64748b" font-size="9">Zero Cloud Dependency / 100% Local</text>
+    </g>
+  </g>
+
+  <!-- ==================== 3. ML ENGINES (SCIENTIFICALLY DECOUPLED) ==================== -->
+  <g transform="translate(650, 110)">
+    <rect width="250" height="420" rx="16" fill="url(#grad-ml)" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.6"/>
+    <rect x="16" y="16" width="32" height="32" rx="8" fill="#10b981" fill-opacity="0.2"/>
+    <text x="26" y="38" fill="#6ee7b7" font-size="16" font-weight="700">3</text>
+    <text x="60" y="34" fill="#f1f5f9" font-size="15" font-weight="700">AI &amp; Odor Intelligence</text>
+    <text x="60" y="49" fill="#6ee7b7" font-size="11" font-weight="600">Strict Model Decoupling</text>
+
+    <g transform="translate(16, 75)">
+      <!-- Environmental E-Nose Pipeline -->
+      <rect width="218" height="110" rx="10" fill="#0f172a" stroke="#10b981" stroke-width="1" stroke-opacity="0.5"/>
+      <text x="14" y="24" fill="#6ee7b7" font-size="12" font-weight="700">Environmental E-Nose</text>
+      <text x="14" y="42" fill="#e2e8f0" font-size="11">BME688 MOX Sensor Timeseries</text>
+      <text x="14" y="60" fill="#fbbf24" font-size="10" font-weight="600">51.62% Chronological Holdout</text>
+      <text x="14" y="76" fill="#94a3b8" font-size="9">• Session-independent holdouts</text>
+      <text x="14" y="90" fill="#94a3b8" font-size="9">• Never actuates purifiers</text>
+      <text x="14" y="103" fill="#64748b" font-size="8.5">Statistical indicator only</text>
+
+      <!-- Molecular Odor Model (OpenPOM) -->
+      <rect y="126" width="218" height="110" rx="10" fill="#0f172a" stroke="#059669" stroke-width="1" stroke-opacity="0.5"/>
+      <text x="14" y="150" fill="#34d399" font-size="12" font-weight="700">Molecular Odor Prediction</text>
+      <text x="14" y="168" fill="#e2e8f0" font-size="11">OpenPOM / Morgan-FP RF</text>
+      <text x="14" y="186" fill="#38bdf8" font-size="10" font-weight="600">Accepts SMILES Strings Only</text>
+      <text x="14" y="202" fill="#94a3b8" font-size="9">• 138 Pyrfume odor descriptors</text>
+      <text x="14" y="216" fill="#94a3b8" font-size="9">• RDKit molecular featurization</text>
+      <text x="14" y="229" fill="#ef4444" font-size="8.5">Decoupled from ambient sensors</text>
+
+      <!-- Anomaly Detector -->
+      <rect y="252" width="218" height="60" rx="10" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="14" y="274" fill="#e2e8f0" font-size="12" font-weight="600">Statistical Anomaly Filter</text>
+      <text x="14" y="292" fill="#94a3b8" font-size="10">Rolling Z-Score &amp; Rate-of-Change</text>
+      <text x="14" y="305" fill="#64748b" font-size="9">Separated from Classification</text>
+    </g>
+  </g>
+
+  <!-- ==================== 4. 14-INVARIANT SAFETY ENGINE ==================== -->
+  <g transform="translate(930, 110)">
+    <rect width="210" height="420" rx="16" fill="url(#grad-safety)" stroke="#ef4444" stroke-width="1.5" stroke-opacity="0.6"/>
+    <rect x="16" y="16" width="32" height="32" rx="8" fill="#ef4444" fill-opacity="0.2"/>
+    <text x="26" y="38" fill="#fca5a5" font-size="16" font-weight="700">4</text>
+    <text x="60" y="34" fill="#f1f5f9" font-size="14" font-weight="700">Safety &amp; Automation</text>
+    <text x="60" y="49" fill="#fca5a5" font-size="11" font-weight="600">14 Active Invariants</text>
+
+    <g transform="translate(14, 75)">
+      <!-- Safety Rule 1 -->
+      <rect width="182" height="44" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="10" y="20" fill="#f87171" font-size="10" font-weight="700">Alarm Independence</text>
+      <text x="10" y="34" fill="#cbd5e1" font-size="8.5">Smoke/CO alarms are life-safety</text>
+
+      <!-- Safety Rule 2 -->
+      <rect y="52" width="182" height="44" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="10" y="72" fill="#f87171" font-size="10" font-weight="700">Combustible Gas Guard</text>
+      <text x="10" y="86" fill="#cbd5e1" font-size="8.5">Zero fan switching during leak</text>
+
+      <!-- Safety Rule 3 -->
+      <rect y="104" width="182" height="44" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="10" y="124" fill="#f87171" font-size="10" font-weight="700">Atomic Pre-Dispatch</text>
+      <text x="10" y="138" fill="#cbd5e1" font-size="8.5">Re-checks override before actuate</text>
+
+      <!-- Safety Rule 4 -->
+      <rect y="156" width="182" height="44" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="10" y="176" fill="#f87171" font-size="10" font-weight="700">Manual Override 30m</text>
+      <text x="10" y="190" fill="#cbd5e1" font-size="8.5">User manual touch supersedes</text>
+
+      <!-- Safety Rule 5 -->
+      <rect y="208" width="182" height="44" rx="8" fill="#0f172a" stroke="#ef4444" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="10" y="228" fill="#f87171" font-size="10" font-weight="700">Rate Limiter (1/30s)</text>
+      <text x="10" y="242" fill="#cbd5e1" font-size="8.5">Prevents motor oscillation</text>
+
+      <!-- Safety Kill Switch -->
+      <rect y="260" width="182" height="52" rx="8" fill="#7f1d1d" fill-opacity="0.4" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="10" y="280" fill="#fecaca" font-size="10" font-weight="700">GLOBAL KILL SWITCH</text>
+      <text x="10" y="295" fill="#fca5a5" font-size="8.5">Navbar one-click pause persists</text>
+      <text x="10" y="306" fill="#fca5a5" font-size="8.5">across application restarts</text>
+    </g>
+  </g>
+
+  <!-- ==================== 5. NEXT.JS FRONTEND (BOTTOM BAR) ==================== -->
+  <g transform="translate(60, 560)">
+    <rect width="1080" height="140" rx="16" fill="url(#grad-ui)" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.6"/>
+    <rect x="20" y="20" width="32" height="32" rx="8" fill="#8b5cf6" fill-opacity="0.2"/>
+    <text x="30" y="42" fill="#c4b5fd" font-size="16" font-weight="700">5</text>
+    <text x="64" y="36" fill="#f1f5f9" font-size="16" font-weight="700">Next.js 14 Responsive UI &amp; Control Pane</text>
+    <text x="64" y="52" fill="#c4b5fd" font-size="11" font-weight="500">React 18 / TypeScript Strict / Tailwind CSS / Recharts / Playwright Automated</text>
+
+    <g transform="translate(20, 68)">
+      <!-- UI Tabs -->
+      <rect width="180" height="52" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="12" y="24" fill="#e2e8f0" font-size="12" font-weight="600">Overview Dashboard</text>
+      <text x="12" y="40" fill="#94a3b8" font-size="10">Live Gauges &amp; 24h Trend</text>
+
+      <rect x="195" width="180" height="52" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="207" y="24" fill="#e2e8f0" font-size="12" font-weight="600">Devices &amp; Discovery</text>
+      <text x="207" y="40" fill="#94a3b8" font-size="10">Catalog, Pairing &amp; Health</text>
+
+      <rect x="390" width="190" height="52" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="402" y="24" fill="#e2e8f0" font-size="12" font-weight="600">8-Stage Onboarding</text>
+      <text x="402" y="40" fill="#94a3b8" font-size="10">Consumer Zero-Config Flow</text>
+
+      <rect x="595" width="170" height="52" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="607" y="24" fill="#e2e8f0" font-size="12" font-weight="600">AI Model Lab</text>
+      <text x="607" y="40" fill="#94a3b8" font-size="10">SMILES Predict &amp; Notice</text>
+
+      <rect x="780" width="160" height="52" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="792" y="24" fill="#e2e8f0" font-size="12" font-weight="600">Automations &amp; Safety</text>
+      <text x="792" y="40" fill="#94a3b8" font-size="10">Presets &amp; Overrides</text>
+
+      <rect x="955" width="85" height="52" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <text x="965" y="24" fill="#e2e8f0" font-size="12" font-weight="600">Settings</text>
+      <text x="965" y="40" fill="#94a3b8" font-size="10">GDPR Export</text>
+    </g>
+  </g>
+
+  <!-- Connection Arrows / Pipes -->
+  <!-- 1 -> 2 -->
+  <path d="M 310 320 L 340 320" stroke="#0284c7" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <!-- 2 -> 3 -->
+  <path d="M 620 270 L 650 270" stroke="#6366f1" stroke-width="2" stroke-dasharray="4,3"/>
+  <!-- 2 -> 4 -->
+  <path d="M 620 400 L 930 400" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,3"/>
+  <!-- 2 -> 5 -->
+  <path d="M 480 530 L 480 560" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,3"/>
+</svg>
+

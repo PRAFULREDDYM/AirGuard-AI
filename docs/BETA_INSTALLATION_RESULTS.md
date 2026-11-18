@@ -64,3 +64,4 @@ Executed `airguard-ctl doctor`:
 - **Log Directory:** `~/Library/Logs/AirGuard` created and verified.
 - **Port 8000:** Verified process binding and healthy response.
 - **SQLite Database:** Intact and verified with Alembic revision `c8f1e31d45ab`.
+

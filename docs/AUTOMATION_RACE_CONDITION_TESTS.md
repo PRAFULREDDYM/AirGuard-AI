@@ -27,3 +27,4 @@ AirGuard AI Phase 8 introduces an **Atomic Pre-Dispatch Recheck** at the boundar
   - `test_race_condition_pause_killswitch_at_dispatch`: **PASSED** (Zero commands dispatched; execution status `BLOCKED_BY_SAFETY`).
   - `test_race_condition_manual_override_at_dispatch`: **PASSED** (Zero commands dispatched; execution status `BLOCKED_BY_SAFETY`).
 - **Summary**: 3/3 tests passed in 0.33s.
+

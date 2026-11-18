@@ -57,3 +57,4 @@ AirGuard AI delivers multi-channel notifications across **In-App Toast/Notificat
   - `test_push_subscription_and_delivery_acknowledgment`: **PASSED** (200 OK, active subscription, ACK transition to `DELIVERED`).
   - `test_device_offline_detection_and_deduplication`: **PASSED** (200 OK, detects stale device, generates warning, suppresses duplicate on immediate re-scan).
 - **Execution Time**: 2 passed in 2.06s.
+

@@ -93,3 +93,4 @@ async def test_device_offline_detection_and_deduplication():
         assert scan_res2.status_code == 200
         scan_data2 = scan_res2.json()
         assert scan_data2["offline_alerts_created"] == 0 # Deduplicated!
+

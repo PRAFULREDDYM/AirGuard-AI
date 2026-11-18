@@ -48,3 +48,4 @@ To preserve scientific and operational honesty, AirGuard AI explicitly distingui
 | **Unreachable Device IP** | `test_airgradient_local_adapter_telemetry_and_unreachable` | Socket Timeout, Returns `is_connected=False` | **PASSED** |
 | **Cross-Home IDOR Attack** | `test_cross_home_idor_isolation` | User B commanding User A device returns HTTP 403 | **PASSED** |
 | **Disconnection & Reconnection** | `test_device_lifecycle_management` | Marks `is_online=False`, refresh re-establishes | **PASSED** |
+

@@ -64,3 +64,4 @@ This security audit inspects AirGuard AI's attack surface across authentication,
 3. Configure PostgreSQL connection string `DATABASE_URL="postgresql+asyncpg://..."`.
 4. Ensure TLS/HTTPS termination at reverse proxy (Caddy, Nginx, or Traefik).
 5. Verify CORS `BACKEND_CORS_ORIGINS` is locked to legitimate consumer client origins.
+

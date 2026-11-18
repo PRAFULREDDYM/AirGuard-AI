@@ -140,12 +140,13 @@ export default function OnboardingPage() {
         : deviceCategory === "monitor"
         ? !d.is_controllable && d.protocol === "airgradient"
         : deviceCategory === "sensor"
-        ? d.id.includes("bme688") || d.protocol === "esphome" || d.protocol === "rest"
+        ? (d.id || "").includes("bme688") || d.protocol === "esphome" || d.protocol === "rest"
         : d.protocol === "home_assistant";
+    const q = (searchQuery || "").toLowerCase();
     const matchesSearch =
-      d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      d.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      d.model.toLowerCase().includes(searchQuery.toLowerCase());
+      (d.name || "").toLowerCase().includes(q) ||
+      (d.brand || "").toLowerCase().includes(q) ||
+      (d.model || "").toLowerCase().includes(q);
     return matchesCategory && matchesSearch;
   });
 

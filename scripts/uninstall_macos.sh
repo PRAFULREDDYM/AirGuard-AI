@@ -39,3 +39,4 @@ else
 fi
 
 echo "AirGuard AI has been uninstalled."
+

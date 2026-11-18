@@ -177,3 +177,4 @@ echo "• Database File: ${DATA_DIR}/airguard.db"
 echo "• Logs: ${LOG_DIR}/gateway.log"
 echo ""
 echo "To start the background daemon: airguard-ctl start"
+
