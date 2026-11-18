@@ -10,6 +10,11 @@ jobs:
   backend-tests:
     name: Backend Unit & Integration Tests
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "sqlite+aiosqlite:///./airguard.db"
+      SECRET_KEY: "airguard-ci-testing-secret-key-1234567890"
+      ENCRYPTION_KEY: "airguard-aes256-default-key-32b!"
+      ENVIRONMENT: "development"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

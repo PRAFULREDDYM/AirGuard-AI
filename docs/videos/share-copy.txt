@@ -1,0 +1,8 @@
+🌬️ Introducing AirGuard AI — an open-source, AI-powered environmental
+monitoring system that connects your air-quality sensors, detects anomalies,
+predicts molecular odors, and automates smart-home responses.
+
+Built with Python, Next.js, FastAPI, OpenPOM, and real ML evaluation pipelines.
+
+🔗 github.com/PRAFULREDDYM/AirGuard-AI
+#AirGuardAI #OpenSource #AirQuality #MachineLearning #IoT #Python #NextJS
