@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AirGuard AI — Launch Video V2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body, html {
+    width: 1920px; height: 1080px;
+    overflow: hidden;
+    background: #060913;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    color: #ffffff;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── 3D Viewport & Camera Stage ── */
+  #stage {
+    position: absolute;
+    width: 1920px; height: 1080px;
+    perspective: 1200px;
+    perspective-origin: 50% 50%;
+    transform-style: preserve-3d;
+    overflow: hidden;
+  }
+
+  #camera {
+    position: absolute;
+    width: 1920px; height: 1080px;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /* ── Canvas Background Layers ── */
+  #particleCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1920px; height: 1080px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 0;
+  }
+  .glow-cyan {
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(0, 200, 180, 0.35) 0%, rgba(0, 200, 180, 0) 70%);
+  }
+  .glow-blue {
+    width: 900px; height: 900px;
+    background: radial-gradient(circle, rgba(40, 100, 240, 0.35) 0%, rgba(40, 100, 240, 0) 70%);
+  }
+
+  /* ── Scene Containers (z-index managed by script) ── */
+  .scene {
+    position: absolute;
+    width: 1920px; height: 1080px;
+    top: 0; left: 0;
+    transform-style: preserve-3d;
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    will-change: transform, opacity;
+  }
+
+  /* ── Typography & Kinetic Text ── */
+  .headline-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 9999px;
+    background: rgba(0, 200, 180, 0.12);
+    border: 1px solid rgba(0, 200, 180, 0.3);
+    color: #00e5cc;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    box-shadow: 0 0 20px rgba(0, 200, 180, 0.2);
+  }
+  .headline-pill .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #00e5cc;
+    box-shadow: 0 0 8px #00e5cc;
+  }
+
+  .title-hero {
+    font-size: 88px;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    text-align: center;
+    background: linear-gradient(180deg, #ffffff 40%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  }
+
+  .title-hero .accent-cyan {
+    background: linear-gradient(135deg, #00f2d5 0%, #00a896 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    font-size: 32px;
+    font-weight: 400;
+    color: #94a3b8;
+    margin-top: 20px;
+    text-align: center;
+    max-width: 1000px;
+    line-height: 1.4;
+  }
+
+  /* ── Glassmorphic UI Cards ── */
+  .glass-panel {
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+  }
+
+  /* ── Simulation Badge ── */
+  .sim-badge {
+    position: absolute;
+    bottom: 36px;
+    right: 48px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.75);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    color: #fbbf24;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 99;
+  }
+  .sim-badge::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #fbbf24;
+    box-shadow: 0 0 6px #fbbf24;
+  }
+
+  /* ── Scene Specifics ── */
+  /* Scene 0: Logo Reveal */
+  #logoGlowRing {
+    position: absolute;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 200, 180, 0.4);
+    box-shadow: 0 0 60px rgba(0, 200, 180, 0.3), inset 0 0 60px rgba(0, 200, 180, 0.2);
+  }
+
+  /* Scene 1: Dashboard Elements */
+  .dashboard-wrapper {
+    position: relative;
+    width: 1440px; height: 810px;
+    display: flex;
+    gap: 28px;
+    padding: 32px;
+  }
+  .telemetry-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 32px;
+    justify-content: space-between;
+  }
+  .gauge-circle {
+    position: relative;
+    width: 220px; height: 220px;
+    margin: 20px auto;
+  }
+  .gauge-value {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .gauge-num {
+    font-size: 54px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .gauge-unit {
+    font-size: 16px;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 4px;
+  }
+
+  /* Scene 2: Network Topology */
+  .network-stage {
+    width: 1300px; height: 600px;
+    position: relative;
+  }
+  .node-box {
+    position: absolute;
+    width: 300px;
+    padding: 24px;
+    border-radius: 18px;
+    text-align: center;
+  }
+
+  /* Scene 3: Molecular Waveform & E-Nose */
+  .model-card {
+    width: 1200px; height: 560px;
+    padding: 36px;
+    display: flex;
+    gap: 40px;
+  }
+
+  /* Scene 4: Automation Trigger */
+  .alert-banner {
+    position: absolute;
+    top: 140px;
+    width: 900px;
+    padding: 24px 32px;
+    border-radius: 16px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 50px rgba(239, 68, 68, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  /* Scene 5: Montage Grid */
+  .montage-layer {
+    position: absolute;
+    width: 100%; height: 100%;
+    top: 0; left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Scene 6: Outro */
+  .outro-logo-box {
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <!-- Dynamic Ambient Glows -->
+  <div id="glow1" class="ambient-glow glow-cyan" style="top: -150px; left: -150px;"></div>
+  <div id="glow2" class="ambient-glow glow-blue" style="bottom: -200px; right: -200px;"></div>
+
+  <!-- Background Particle & Grid Canvas -->
+  <canvas id="particleCanvas" width="1920" height="1080"></canvas>
+
+  <div id="camera">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SCENE 0: CINEMATIC BRAND REVEAL (0s - 4.14s)
+         ══════════════════════════════════════════════════════════════ -->
+    <div id="scene0" class="scene">
+      <div id="logoGlowRing"></div>
+      <img src="../docs/assets/airguard-logo.png" id="s0Logo" style="width: 780px; filter: drop-shadow(0 15px 35px rgba(0,200,180,0.4));" />
+      <div id="s0Text" style="margin-top: 40px; text-align: center;">
+        <h1 class="title-hero" style="font-size: 76px;">Meet <span class="accent-cyan">AirGuard AI</span></h1>
+        <p class="subtitle" style="font-size: 28px;">Intelligent Environmental Monitoring & Safe Device Automation</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SCENE 1: ENVIRONMENTAL MONITORING (4.14s - 8.28s)
+         ══════════════════════════════════════════════════════════════ -->
+    <div id="scene1" class="scene">
+      <div style="position: absolute; top: 70px; text-align: center;">
+        <div class="headline-pill"><span class="dot"></span> Live Telemetry Engine</div>
+        <h2 class="title-hero" style="font-size: 64px;">Understand your environment.</h2>
+      </div>
+
+      <div class="glass-panel dashboard-wrapper" id="s1Dashboard" style="margin-top: 100px;">
+        <!-- Left: Real-time PM2.5 Gauge -->
+        <div class="glass-panel telemetry-card" style="width: 380px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 18px; font-weight: 600; color: #94a3b8;">PM2.5 Particulate</span>
+            <span id="s1AqiBadge" style="padding: 4px 12px; border-radius: 999px; background: rgba(0,200,180,0.2); color: #00f2d5; font-size: 13px; font-weight: 700;">GOOD</span>
+          </div>
+          <div class="gauge-circle">
+            <svg width="220" height="220" viewBox="0 0 220 220" style="transform: rotate(-90deg);">
+              <circle cx="110" cy="110" r="90" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="16" />
+              <circle id="s1GaugeArc" cx="110" cy="110" r="90" fill="none" stroke="#00e5cc" stroke-width="16" stroke-dasharray="565.48" stroke-dashoffset="450" stroke-linecap="round" style="filter: drop-shadow(0 0 12px #00e5cc);" />
+            </svg>
+            <div class="gauge-value">
+              <div class="gauge-num" id="s1PmVal">12.4</div>
+              <div class="gauge-unit">µg/m³ · Real-Time</div>
+            </div>
+          </div>
+          <div style="font-size: 14px; color: #64748b; text-align: center;">Direct Laser Optical Counter</div>
+        </div>
+
+        <!-- Middle: Sensor Grid -->
+        <div class="glass-panel telemetry-card" style="width: 480px;">
+          <span style="font-size: 18px; font-weight: 600; color: #94a3b8;">Multi-Gas Telemetry</span>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: auto 0;">
+            <div style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="font-size: 13px; color: #64748b; text-transform: uppercase;">NDIR CO2</div>
+              <div style="font-size: 32px; font-weight: 700; color: #fff; margin-top: 4px;" id="s1Co2Val">612 <small style="font-size: 16px; font-weight: 400; color: #94a3b8;">ppm</small></div>
+              <div style="font-size: 12px; color: #00f2d5; margin-top: 4px;">Direct Optical Sensor</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="font-size: 13px; color: #64748b; text-transform: uppercase;">VOC Index</div>
+              <div style="font-size: 32px; font-weight: 700; color: #fff; margin-top: 4px;" id="s1VocVal">104 <small style="font-size: 16px; font-weight: 400; color: #94a3b8;">/ 500</small></div>
+              <div style="font-size: 12px; color: #00f2d5; margin-top: 4px;">Sensirion Relative</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="font-size: 13px; color: #64748b; text-transform: uppercase;">Temperature</div>
+              <div style="font-size: 32px; font-weight: 700; color: #fff; margin-top: 4px;">22.4 <small style="font-size: 16px; font-weight: 400; color: #94a3b8;">°C</small></div>
+              <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Calibrated Ambient</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="font-size: 13px; color: #64748b; text-transform: uppercase;">Humidity</div>
+              <div style="font-size: 32px; font-weight: 700; color: #fff; margin-top: 4px;">45.8 <small style="font-size: 16px; font-weight: 400; color: #94a3b8;">%</small></div>
+              <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Optimal Comfort</div>
+            </div>
+          </div>
+          <div style="font-size: 13px; color: #94a3b8;">Provenance: Direct Hardware Telemetry (AirGradient Local)</div>
+        </div>
+
+        <!-- Right: Animated Trend Chart -->
+        <div class="glass-panel telemetry-card" style="flex: 1.2;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 18px; font-weight: 600; color: #94a3b8;">24-Hour Trend History</span>
+            <span style="font-size: 13px; color: #00e5cc; font-weight: 600;">1-Second Refresh Rate</span>
+          </div>
+          <div style="flex: 1; position: relative; margin-top: 20px; overflow: hidden;">
+            <svg width="100%" height="100%" viewBox="0 0 460 220" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00e5cc" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#00e5cc" stop-opacity="0.0"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="40" x2="460" y2="40" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4" />
+              <line x1="0" y1="110" x2="460" y2="110" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4" />
+              <line x1="0" y1="180" x2="460" y2="180" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4" />
+              <path id="s1Area" d="M 0,160 Q 115,140 230,120 T 460,90 L 460,220 L 0,220 Z" fill="url(#chartGrad)" />
+              <path id="s1Line" d="M 0,160 Q 115,140 230,120 T 460,90" fill="none" stroke="#00e5cc" stroke-width="4" stroke-linecap="round" style="filter: drop-shadow(0 0 10px #00e5cc);" />
+              <circle id="s1Point" cx="460" cy="90" r="7" fill="#fff" stroke="#00e5cc" stroke-width="4" style="filter: drop-shadow(0 0 8px #00e5cc);" />
+            </svg>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b;">
+            <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>Now</span>
+          </div>
+        </div>
+      </div>
+      <div class="sim-badge">Simulated demonstration · Live UI Telemetry</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SCENE 2: DEVICE CONNECTIVITY TOPOLOGY (8.28s - 14.48s)
+         ══════════════════════════════════════════════════════════════ -->
+    <div id="scene2" class="scene">
+      <div style="position: absolute; top: 70px; text-align: center;">
+        <div class="headline-pill"><span class="dot"></span> Multi-Protocol Topology</div>
+        <h2 class="title-hero" style="font-size: 64px;">Connect. Monitor. Respond.</h2>
+        <p class="subtitle" style="font-size: 24px; margin-top: 12px;">Unified local gateway supporting Home Assistant, MQTT, AirGradient & ESPHome</p>
+      </div>
+
+      <div class="network-stage" style="margin-top: 110px;">
+        <svg width="1300" height="600" style="position: absolute; top: 0; left: 0; pointer-events: none;">
+          <defs>
+            <linearGradient id="wireGrad1" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="#00e5cc" />
+              <stop offset="100%" stop-color="#3b82f6" />
+            </linearGradient>
+            <linearGradient id="wireGrad2" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="#3b82f6" />
+              <stop offset="100%" stop-color="#a855f7" />
+            </linearGradient>
+          </defs>
+          <!-- Connection Paths -->
+          <path id="wireLeft" d="M 280,300 C 450,300 500,300 650,300" stroke="url(#wireGrad1)" stroke-width="4" fill="none" stroke-linecap="round" />
+          <path id="wireRight" d="M 650,300 C 800,300 850,300 1020,300" stroke="url(#wireGrad2)" stroke-width="4" fill="none" stroke-linecap="round" />
+          <!-- Animated Laser Pulses -->
+          <circle id="pulseLeft" cx="280" cy="300" r="8" fill="#00e5cc" style="filter: drop-shadow(0 0 12px #00e5cc);" />
+          <circle id="pulseRight" cx="650" cy="300" r="8" fill="#a855f7" style="filter: drop-shadow(0 0 12px #a855f7);" />
+        </svg>
+
+        <!-- Node 1: Sensor Device -->
+        <div class="glass-panel node-box" id="nodeSensor" style="left: 20px; top: 180px;">
+          <div style="font-size: 38px; margin-bottom: 12px;">📡</div>
+          <div style="font-size: 22px; font-weight: 700; color: #fff;">AirGradient ONE</div>
+          <div style="font-size: 14px; color: #00e5cc; margin-top: 6px;">PM2.5, CO2, VOC, NOx</div>
+          <div style="margin-top: 14px; font-size: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(0,229,204,0.15); display: inline-block;">Local HTTP REST</div>
+        </div>
+
+        <!-- Node 2: AirGuard AI Core Gateway -->
+        <div class="glass-panel node-box" id="nodeGateway" style="left: 500px; top: 150px; width: 300px; border-color: rgba(59,130,246,0.5); box-shadow: 0 0 50px rgba(59,130,246,0.3);">
+          <img src="../docs/assets/airguard-logo.png" style="width: 220px; margin-bottom: 8px;" />
+          <div style="font-size: 20px; font-weight: 800; color: #fff;">Local Core Engine</div>
+          <div style="font-size: 13px; color: #94a3b8; margin-top: 6px;">14-Invariant Safety Interlock</div>
+          <div style="margin-top: 14px; font-size: 12px; padding: 4px 12px; border-radius: 6px; background: rgba(59,130,246,0.2); color: #60a5fa; font-weight: 600;">Rate Limiter: 1cmd / 30s</div>
+        </div>
+
+        <!-- Node 3: Actuator / Purifier -->
+        <div class="glass-panel node-box" id="nodeActuator" style="left: 980px; top: 180px;">
+          <div style="font-size: 38px; margin-bottom: 12px;">🌪️</div>
+          <div style="font-size: 22px; font-weight: 700; color: #fff;">Smart Air Purifier</div>
+          <div style="font-size: 14px; color: #c084fc; margin-top: 6px;">Home Assistant Bridge</div>
+          <div style="margin-top: 14px; font-size: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(168,85,247,0.15); display: inline-block;">Fan Control Verified</div>
+        </div>
+      </div>
+      <div class="sim-badge">Simulated demonstration · Multi-Protocol Topology</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SCENE 3: ENVIRONMENTAL INTELLIGENCE & AI LAB (14.48s - 20.70s)
+         ══════════════════════════════════════════════════════════════ -->
+    <div id="scene3" class="scene">
+      <div style="position: absolute; top: 70px; text-align: center;">
+        <div class="headline-pill"><span class="dot"></span> Rigorous Machine Learning</div>
+        <h2 class="title-hero" style="font-size: 64px;">Environmental intelligence, backed by data.</h2>
+        <p class="subtitle" style="font-size: 24px; margin-top: 12px;">Decoupling SMILES molecular odor prediction from ambient MOX time series</p>
+      </div>
+
+      <div class="glass-panel model-card" id="s3Card" style="margin-top: 100px;">
+        <!-- Left: OpenPOM Molecular Structure -->
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="font-size: 15px; font-weight: 600; color: #00e5cc; text-transform: uppercase; letter-spacing: 0.1em;">Molecular Odor Lab (OpenPOM)</div>
+            <div style="font-size: 26px; font-weight: 700; color: #fff; margin-top: 6px;">Isoamyl Acetate</div>
+            <code style="display: block; margin-top: 8px; font-size: 14px; color: #94a3b8; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px; font-family: monospace;">CC(=O)OCCC(C)C</code>
+          </div>
+
+          <!-- Molecular Graph Mockup -->
+          <div style="position: relative; width: 100%; height: 200px; display: flex; align-items: center; justify-content: center;">
+            <svg width="340" height="180" viewBox="0 0 340 180">
+              <line x1="50" y1="90" x2="110" y2="50" stroke="#00e5cc" stroke-width="4" />
+              <line x1="110" y1="50" x2="110" y2="130" stroke="#00e5cc" stroke-width="4" />
+              <line x1="110" y1="50" x2="180" y2="50" stroke="#00e5cc" stroke-width="4" />
+              <line x1="180" y1="50" x2="230" y2="90" stroke="#00e5cc" stroke-width="4" />
+              <line x1="230" y1="90" x2="290" y2="50" stroke="#00e5cc" stroke-width="4" />
+              <circle cx="50" cy="90" r="10" fill="#00e5cc" />
+              <circle cx="110" cy="50" r="10" fill="#00e5cc" />
+              <circle cx="110" cy="130" r="10" fill="#3b82f6" />
+              <circle cx="180" cy="50" r="10" fill="#00e5cc" />
+              <circle cx="230" cy="90" r="10" fill="#00e5cc" />
+              <circle cx="290" cy="50" r="10" fill="#00e5cc" />
+            </svg>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <span style="padding: 6px 14px; border-radius: 8px; background: rgba(0,229,204,0.15); color: #00f2d5; font-size: 13px; font-weight: 600;">Fruity · 0.94</span>
+            <span style="padding: 6px 14px; border-radius: 8px; background: rgba(0,229,204,0.15); color: #00f2d5; font-size: 13px; font-weight: 600;">Banana · 0.91</span>
+            <span style="padding: 6px 14px; border-radius: 8px; background: rgba(0,229,204,0.15); color: #00f2d5; font-size: 13px; font-weight: 600;">Sweet · 0.88</span>
+          </div>
+        </div>
+
+        <div style="width: 1px; background: rgba(255,255,255,0.1);"></div>
+
+        <!-- Right: Honest E-Nose Benchmark Disclosures -->
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="font-size: 15px; font-weight: 600; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.1em;">BME688 MOX E-Nose Model</div>
+            <div style="font-size: 26px; font-weight: 700; color: #fff; margin-top: 6px;">Session-Independent Holdout</div>
+            <p style="font-size: 14px; color: #94a3b8; margin-top: 8px; line-height: 1.5;">
+              Rigorous chronological splits reveal true generalization without temporal leakage. Experimental classification is strictly separated from safety actions.
+            </p>
+          </div>
+
+          <!-- Benchmark Metrics Box -->
+          <div style="background: rgba(0,0,0,0.3); border-radius: 14px; padding: 20px; border: 1px solid rgba(255,255,255,0.06);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span style="font-size: 15px; color: #94a3b8;">Balanced Accuracy (Holdout)</span>
+              <span style="font-size: 32px; font-weight: 800; color: #60a5fa;">51.62%</span>
+            </div>
+            <div style="margin-top: 12px; font-size: 13px; color: #ef4444; display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span> Never infer CO or toxic hazards from VOC patterns
+            </div>
+          </div>
+
+          <div style="font-size: 13px; color: #64748b;">
+            Safety Policy: Certified smoke & CO alarms always override ML predictions.
+          </div>
+        </div>
+      </div>
+      <div class="sim-badge">Simulated demonstration · AI Research Lab</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SCENE 4: INTELLIGENT AUTOMATION (20.70s - 26.91s)
+         ══════════════════════════════════════════════════════════════ -->
+    <div id="scene4" class="scene">
+      <div style="position: absolute; top: 70px; text-align: center;">
+        <div class="headline-pill" style="border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.12); color: #f87171;"><span class="dot" style="background: #f87171; box-shadow: 0 0 8px #f87171;"></span> Fail-Safe Actuation</div>
+        <h2 class="title-hero" style="font-size: 64px;">From insight to action.</h2>
+        <p class="subtitle" style="font-size: 24px; margin-top: 12px;">Consent-driven response: Elevated PM2.5 detected → Purifier boosted</p>
+      </div>
+
+      <!-- Elevated Event Alert Banner -->
+      <div class="alert-banner" id="s4Alert">
+        <div style="font-size: 34px;">⚠️</div>
+        <div style="flex: 1;">
+          <div style="font-size: 18px; font-weight: 700; color: #fff;">ELEVATED READING: Living Room PM2.5 at 48.2 µg/m³</div>
+          <div style="font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 4px;">Exceeded 35 µg/m³ threshold for 60s · Invariant checks passed</div>
+        </div>
+        <div style="padding: 8px 18px; border-radius: 8px; background: rgba(239,68,68,0.3); font-weight: 700; font-size: 13px; color: #fff;">ACTION TRIGGERED</div>
+      </div>
+
+      <!-- Action Card -->
+      <div class="glass-panel" id="s4ActionCard" style="margin-top: 140px; width: 850px; padding: 32px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(0,229,204,0.15); display: flex; align-items: center; justify-content: center; font-size: 32px;">🌪️</div>
+          <div>
+            <div style="font-size: 22px; font-weight: 700;">Levoit Core 400S Purifier</div>
+            <div style="font-size: 14px; color: #00e5cc; margin-top: 4px;" id="s4ActionStatus">Executing: Set Fan Speed to HIGH</div>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 13px; color: #94a3b8;">User Consent</div>
+          <div style="font-size: 14px; font-weight: 600; color: #22c55e; margin-top: 2px;">✓ Explicitly Authorized</div>
+        </div>
+      </div>
+
+      <div class="sim-badge">Simulated demonstration · Automated Actuation</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SCENE 5: RAPID MONTAGE (26.91s - 31.05s)
+         ══════════════════════════════════════════════════════════════ -->
+    <div id="scene5" class="scene">
+      <div class="montage-layer" id="mLayer1">
+        <div class="glass-panel" style="padding: 60px 100px; text-align: center; border-color: rgba(0,229,204,0.4);">
+          <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+          <h2 style="font-size: 64px; font-weight: 800;">Real-Time Sensing</h2>
+          <p style="font-size: 24px; color: #00e5cc; margin-top: 8px;">Sub-second particulate telemetry</p>
+        </div>
+      </div>
+
+      <div class="montage-layer" id="mLayer2" style="opacity: 0;">
+        <div class="glass-panel" style="padding: 60px 100px; text-align: center; border-color: rgba(59,130,246,0.4);">
+          <div style="font-size: 48px; margin-bottom: 16px;">🔒</div>
+          <h2 style="font-size: 64px; font-weight: 800;">14-Invariant Safety</h2>
+          <p style="font-size: 24px; color: #60a5fa; margin-top: 8px;">Zero automated risks</p>
+        </div>
+      </div>
+
+      <div class="montage-layer" id="mLayer3" style="opacity: 0;">
+        <div class="glass-panel" style="padding: 60px 100px; text-align: center; border-color: rgba(168,85,247,0.4);">
+          <div style="font-size: 48px; margin-bottom: 16px;">🏡</div>
+          <h2 style="font-size: 64px; font-weight: 800;">Multi-Brand Control</h2>
+          <p style="font-size: 24px; color: #c084fc; margin-top: 8px;">Home Assistant · MQTT · ESPHome</p>
+        </div>
+      </div>
+
+      <div class="montage-layer" id="mLayer4" style="opacity: 0;">
+        <div class="glass-panel" style="padding: 60px 100px; text-align: center; border-color: rgba(239,68,68,0.4);">
+          <div style="font-size: 48px; margin-bottom: 16px;">🛑</div>
+          <h2 style="font-size: 64px; font-weight: 800;">Emergency Kill Switch</h2>
+          <p style="font-size: 24px; color: #f87171; margin-top: 8px;">One-click hardware pause</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SCENE 6: STRONG CLOSING (31.05s - 35.0s)
+         ══════════════════════════════════════════════════════════════ -->
+    <div id="scene6" class="scene">
+      <div class="outro-logo-box">
+        <img src="../docs/assets/airguard-logo.png" style="width: 820px; filter: drop-shadow(0 20px 50px rgba(0,200,180,0.5));" />
+        <h2 style="font-size: 42px; font-weight: 700; color: #00e5cc; margin-top: 32px; letter-spacing: 0.08em; text-transform: uppercase;">
+          Monitor. &nbsp;Understand. &nbsp;Respond.
+        </h2>
+        <div style="width: 280px; height: 3px; background: linear-gradient(90deg, #00e5cc, #3b82f6); margin: 24px auto; border-radius: 2px;"></div>
+        <p style="font-size: 28px; font-weight: 500; color: #f1f5f9; letter-spacing: 0.02em;">
+          github.com/PRAFULREDDYM/AirGuard-AI
+        </p>
+        <p style="font-size: 16px; color: #64748b; margin-top: 18px;">
+          Open Source · MIT License · 100% Local & Privacy-by-Design
+        </p>
+      </div>
+    </div>
+
+  </div> <!-- /#camera -->
+</div> <!-- /#stage -->
+
+<script>
+  // ── Particle Background Simulation ──
+  const pCanvas = document.getElementById('particleCanvas');
+  const ctx = pCanvas.getContext('2d');
+  const PARTICLE_COUNT = 65;
+  const particles = [];
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles.push({
+      x: Math.random() * 1920,
+      y: Math.random() * 1080,
+      z: Math.random() * 800 - 400,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: -0.4 - Math.random() * 0.5,
+      r: 1.5 + Math.random() * 3,
+      alpha: 0.2 + Math.random() * 0.5,
+      cyan: Math.random() > 0.4
+    });
+  }
+
+  function drawParticles(t) {
+    ctx.clearRect(0, 0, 1920, 1080);
+
+    // Subtle atmospheric grid
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    ctx.lineWidth = 1;
+    const gridOffset = (t * 20) % 80;
+    for (let x = -80 + gridOffset; x < 1920; x += 80) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0); ctx.lineTo(x, 1080);
+      ctx.stroke();
+    }
+    for (let y = -80 + gridOffset; y < 1080; y += 80) {
+      ctx.beginPath();
+      ctx.moveTo(0, y); ctx.lineTo(1920, y);
+      ctx.stroke();
+    }
+
+    // Floating particles
+    for (let p of particles) {
+      const curX = (p.x + p.vx * t * 60) % 1920;
+      const curY = ((p.y + p.vy * t * 60) % 1080 + 1080) % 1080;
+      ctx.fillStyle = p.cyan ? `rgba(0, 229, 204, ${p.alpha})` : `rgba(59, 130, 246, ${p.alpha})`;
+      ctx.beginPath();
+      ctx.arc(curX, curY, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ── Smooth Easing Functions ──
+  function easeInOutCubic(x) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  }
+  function easeOutQuad(x) {
+    return 1 - (1 - x) * (1 - x);
+  }
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
+
+  // ── Deterministic Frame Render Function ──
+  window.renderFrame = function(t) {
+    drawParticles(t);
+
+    const camera = document.getElementById('camera');
+    const s0 = document.getElementById('scene0');
+    const s1 = document.getElementById('scene1');
+    const s2 = document.getElementById('scene2');
+    const s3 = document.getElementById('scene3');
+    const s4 = document.getElementById('scene4');
+    const s5 = document.getElementById('scene5');
+    const s6 = document.getElementById('scene6');
+
+    // Reset opacities
+    s0.style.opacity = 0;
+    s1.style.opacity = 0;
+    s2.style.opacity = 0;
+    s3.style.opacity = 0;
+    s4.style.opacity = 0;
+    s5.style.opacity = 0;
+    s6.style.opacity = 0;
+
+    // ─────────────────────────────────────────────────────────────
+    // SCENE 0: BRAND REVEAL (0.0s -> 4.14s)
+    // ─────────────────────────────────────────────────────────────
+    if (t < 4.14) {
+      const p = t / 4.14;
+      s0.style.opacity = p < 0.1 ? p / 0.1 : (p > 0.88 ? (1 - (p - 0.88) / 0.12) : 1);
+
+      // Camera dolly push-in
+      const camZ = -200 + p * 200;
+      const camRotX = 8 * (1 - p);
+      camera.style.transform = `translate3d(0, 0, ${camZ}px) rotateX(${camRotX}deg)`;
+
+      // Logo ring scale & glow
+      const ring = document.getElementById('logoGlowRing');
+      const ringScale = 0.8 + 0.4 * easeOutQuad(Math.min(1, p * 2.5));
+      ring.style.transform = `scale(${ringScale}) rotate(${t * 20}deg)`;
+
+      // Logo entrance
+      const logo = document.getElementById('s0Logo');
+      const logoScale = 0.85 + 0.15 * easeInOutCubic(Math.min(1, p * 2.0));
+      logo.style.transform = `scale(${logoScale})`;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCENE 1: ENVIRONMENTAL MONITORING (4.14s -> 8.28s)
+    // ─────────────────────────────────────────────────────────────
+    else if (t < 8.28) {
+      const p = (t - 4.14) / (8.28 - 4.14);
+      s1.style.opacity = p < 0.1 ? p / 0.1 : (p > 0.88 ? (1 - (p - 0.88) / 0.12) : 1);
+
+      // Camera dynamic tilt & pan
+      const camY = 30 * (1 - p);
+      const camZ = -100 + p * 80;
+      const camRotX = 4 * (1 - p);
+      camera.style.transform = `translate3d(0, ${camY}px, ${camZ}px) rotateX(${camRotX}deg)`;
+
+      // Animated gauge arc sweep
+      const gaugeArc = document.getElementById('s1GaugeArc');
+      const gaugeVal = document.getElementById('s1PmVal');
+      const pmTarget = 12.4 + 2.2 * Math.sin(t * 3);
+      gaugeVal.innerText = pmTarget.toFixed(1);
+
+      // Offset: 565.48 is empty, 380 is ~14 ug/m3
+      const arcOffset = 565.48 - (pmTarget / 60) * 565.48;
+      gaugeArc.style.strokeDashoffset = arcOffset;
+
+      // Card 3D float tilt
+      const dash = document.getElementById('s1Dashboard');
+      const tiltY = Math.sin(t * 1.5) * 3;
+      dash.style.transform = `rotateY(${tiltY}deg) rotateX(2deg)`;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCENE 2: DEVICE TOPOLOGY (8.28s -> 14.48s)
+    // ─────────────────────────────────────────────────────────────
+    else if (t < 14.48) {
+      const p = (t - 8.28) / (14.48 - 8.28);
+      s2.style.opacity = p < 0.08 ? p / 0.08 : (p > 0.9 ? (1 - (p - 0.9) / 0.1) : 1);
+
+      // Camera panning across the network
+      const camX = 120 * (0.5 - p);
+      const camZ = -60 + p * 60;
+      camera.style.transform = `translate3d(${camX}px, 0, ${camZ}px)`;
+
+      // Animate laser pulse packets along wires
+      const pulseLeft = document.getElementById('pulseLeft');
+      const pulseRight = document.getElementById('pulseRight');
+      const pulseT1 = (p * 4.0) % 1.0;
+      const pulseT2 = ((p + 0.25) * 4.0) % 1.0;
+
+      pulseLeft.setAttribute('cx', 280 + pulseT1 * 370);
+      pulseRight.setAttribute('cx', 650 + pulseT2 * 370);
+
+      // Nodes entrance stagger
+      const n1 = document.getElementById('nodeSensor');
+      const n2 = document.getElementById('nodeGateway');
+      const n3 = document.getElementById('nodeActuator');
+
+      n1.style.transform = `translateY(${Math.sin(t * 2) * 5}px)`;
+      n2.style.transform = `translateY(${Math.sin(t * 2 + 1) * 6}px) scale(1.03)`;
+      n3.style.transform = `translateY(${Math.sin(t * 2 + 2) * 5}px)`;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCENE 3: AI MODEL LAB (14.48s -> 20.70s)
+    // ─────────────────────────────────────────────────────────────
+    else if (t < 20.70) {
+      const p = (t - 14.48) / (20.70 - 14.48);
+      s3.style.opacity = p < 0.08 ? p / 0.08 : (p > 0.9 ? (1 - (p - 0.9) / 0.1) : 1);
+
+      // Camera orbit rotation
+      const camRotY = -4 + p * 8;
+      const camZ = -40 + p * 50;
+      camera.style.transform = `translate3d(0, 0, ${camZ}px) rotateY(${camRotY}deg)`;
+
+      // Model card tilt
+      const card = document.getElementById('s3Card');
+      card.style.transform = `rotateX(${Math.sin(t * 1.5) * 2}deg)`;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCENE 4: AUTOMATION & RESPONSE (20.70s -> 26.91s)
+    // ─────────────────────────────────────────────────────────────
+    else if (t < 26.91) {
+      const p = (t - 20.70) / (26.91 - 20.70);
+      s4.style.opacity = p < 0.08 ? p / 0.08 : (p > 0.9 ? (1 - (p - 0.9) / 0.1) : 1);
+
+      // Camera dramatic push
+      const camZ = -80 + p * 90;
+      camera.style.transform = `translate3d(0, 0, ${camZ}px)`;
+
+      // Slide in alert banner with spring
+      const alert = document.getElementById('s4Alert');
+      const alertP = clamp((p - 0.05) / 0.25, 0, 1);
+      const alertY = -100 * (1 - easeOutQuad(alertP));
+      alert.style.transform = `translateY(${alertY}px)`;
+
+      // Action card response
+      const actCard = document.getElementById('s4ActionCard');
+      const actP = clamp((p - 0.35) / 0.25, 0, 1);
+      actCard.style.opacity = actP;
+      actCard.style.transform = `scale(${0.9 + 0.1 * easeOutQuad(actP)})`;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCENE 5: RAPID MONTAGE (26.91s -> 31.05s)
+    // ─────────────────────────────────────────────────────────────
+    else if (t < 31.05) {
+      const p = (t - 26.91) / (31.05 - 26.91);
+      s5.style.opacity = 1;
+
+      // 4 quick beat cuts (each ~1.03s)
+      const beatIdx = Math.floor(p * 4);
+      const l1 = document.getElementById('mLayer1');
+      const l2 = document.getElementById('mLayer2');
+      const l3 = document.getElementById('mLayer3');
+      const l4 = document.getElementById('mLayer4');
+
+      l1.style.opacity = beatIdx === 0 ? 1 : 0;
+      l2.style.opacity = beatIdx === 1 ? 1 : 0;
+      l3.style.opacity = beatIdx === 2 ? 1 : 0;
+      l4.style.opacity = beatIdx === 3 ? 1 : 0;
+
+      // Push zoom on each cut
+      const subP = (p * 4) % 1.0;
+      const zoom = 1.0 + subP * 0.12;
+      camera.style.transform = `scale(${zoom})`;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCENE 6: STRONG FINALE CLOSING (31.05s -> 35.0s)
+    // ─────────────────────────────────────────────────────────────
+    else {
+      const p = (t - 31.05) / (35.0 - 31.05);
+      // Fade in quickly, then gentle fade to black at the very end
+      s6.style.opacity = p < 0.1 ? p / 0.1 : (p > 0.88 ? (1 - (p - 0.88) / 0.12) : 1);
+
+      // Grand settling motion
+      const camZ = 100 * (1 - easeOutQuad(Math.min(1, p * 1.5)));
+      camera.style.transform = `translate3d(0, 0, ${-camZ}px)`;
+
+      const outro = document.querySelector('.outro-logo-box');
+      const scale = 0.92 + 0.08 * easeOutQuad(Math.min(1, p * 1.5));
+      outro.style.transform = `scale(${scale})`;
+    }
+  };
+
+  // ── Auto-preview when opened in browser ──
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('play') === '1') {
+    let startTimestamp = null;
+    function loop(now) {
+      if (!startTimestamp) startTimestamp = now;
+      const elapsed = (now - startTimestamp) / 1000;
+      window.renderFrame(elapsed % 35.0);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  } else {
+    // Render initial frame 0
+    window.renderFrame(0);
+  }
+</script>
+</body>
+</html>

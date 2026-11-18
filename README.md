@@ -21,6 +21,7 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Watch AirGuard AI in Action](#watch-airguard-ai-in-action)
 - [System Architecture](#system-architecture)
 - [Screenshots & Walkthrough](#screenshots--walkthrough)
 - [Core Capabilities & Device Support](#core-capabilities--device-support)
@@ -46,6 +47,28 @@
 - **Scientifically Decoupled ML**: Explicitly separates molecular odor prediction (OpenPOM/Pyrfume accepting SMILES strings only) from ambient MOX timeseries classification.
 - **Transparent Benchmarking**: Publicly discloses session-independent holdout metrics (~51.62% balanced accuracy on chronological splits) for electronic-nose models, preventing false marketing claims.
 - **Consumer Zero-Configuration**: Features an 8-stage guided onboarding wizard with automatic hardware discovery, live measurement handshakes, and unbundled GDPR/CCPA consent controls.
+
+---
+
+## Watch AirGuard AI in Action
+
+<div align="center">
+  <a href="https://github.com/PRAFULREDDYM/AirGuard-AI/raw/main/docs/videos/airguard-launch-v2.mp4">
+    <img src="docs/videos/airguard-launch-v2-teaser.gif" alt="AirGuard AI Cinematic Product Trailer" width="850" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);" />
+  </a>
+
+  <br/><br/>
+
+  <p align="center">
+    🎬 <b><a href="https://github.com/PRAFULREDDYM/AirGuard-AI/raw/main/docs/videos/airguard-launch-v2.mp4">Watch Full 1080p Product Trailer (35s MP4 with Sound)</a></b> &nbsp;|&nbsp; 
+    🖼️ <b><a href="docs/videos/airguard-launch-v2-poster.jpg">Poster Frame</a></b> &nbsp;|&nbsp; 
+    📝 <b><a href="docs/videos/VIDEO_CREDITS.md">Technical Specs & Audio Credits</a></b>
+  </p>
+
+  <p align="center">
+    <sub>⚠️ <b>Demonstration Transparency:</b> Environmental sensor spikes, air purifier speeds, and alert triggers shown in this video are simulated demonstrations within our testbed to illustrate system architecture without real hazard exposure.</sub>
+  </p>
+</div>
 
 ---
 

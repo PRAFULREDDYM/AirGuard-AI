@@ -61,6 +61,7 @@ next-env.d.ts
 airguard.db
 airguard.db-journal
 *.log
+*.wav
 
 # Sensitive Files & Environment Variables
 .env
